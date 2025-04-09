@@ -1,66 +1,62 @@
-/*
+% ORACIÓN con SUJETOS COORDINADOS (la que ya tienes)
+oracion(eng, Oraciones) -->
+    g_nominal_coord(eng, GNList),
+    estructura_verbal(eng, VerbosObjs),
+    { construir_oraciones(GNList, VerbosObjs, Oraciones) }.
 
-Traductor b�sico
+% GRUPO NOMINAL COORDINADO (recursivo con nombres propios y/o nominales)
+g_nominal_coord(eng, [GN]) --> g_nombre_propio(eng, GN).
+g_nominal_coord(eng, [GN | Rest]) -->
+    g_nombre_propio(eng, GN),
+    g_conjuncion(eng, _),
+    g_nominal_coord(eng, Rest).
 
-Ejemplo de funcionamiento:
+estructura_verbal(eng, [(GV, OBJ)]) -->
+    g_verbal(eng, GV),
+    g_nominal(eng, OBJ).
 
-?- oracion(eng,X,[the,man,eats],[]), oracion(esp,X,Y,[]).
-X = o(gn(det(el), n(hombre)), gv()),
-Y = [el, hombre, come]
+estructura_verbal(eng, [(GV, OBJ) | Rest]) -->
+    g_verbal(eng, GV),
+    g_nominal(eng, OBJ),
+    g_conjuncion(eng, _),
+    estructura_verbal(eng, Rest).
 
-*/
+% CONSTRUCTOR DE MÚLTIPLES ORACIONES PARA VARIOS SUJETOS
+construir_oraciones([], _, []).
+construir_oraciones([GN | RestGNs], VerbosObjetos, [O | Ors]) :-
+    construir_oracion_individual(GN, VerbosObjetos, O),
+    construir_oraciones(RestGNs, VerbosObjetos, Ors).
 
-%oracion(esp, o(GN,GV)) --> g_nominal(esp, GN)|g_nombre_propio(esp, GN), g_verbal(esp, GV).
-%oracion(esp, o_s(GN, GV)) --> oracion(esp, o_s(GN, GV)), g_conjuncion(esp, Conj), oracion(esp, o_s(GN, GV)).
-%oracion(esp, o_coord(GN, GV))--> g_nominal(esp, GN), g_verbal(esp, GV).
-%oracion(esp, o_comp(GN, GV))--> g_nominal(esp, GN), g_verbal(esp, GV).
+% Genera una oración individual para un GN con multiples verbos y objetos
+construir_oracion_individual(GN, VerbosObjetos, Oracion) :-
+    construir_oracion_individual_aux(GN, VerbosObjetos, [], Oracion).
 
+% Caso base recursivo: cuando ya no hay mas verbos y objetos
+construir_oracion_individual_aux(GN, [], Acc, Oracion) :-
+    reverse(Acc, Partes),
+    Oracion =.. [o, GN | Partes].
 
-
-
-%oracion(eng, o_coord(GN, GV)) --> oracion(eng, o_s(GN, GV)), g_conjuncion(eng, Conj), oracion(eng, o_s(GN, GV)).
-%oracion(eng, o_s(GN, GV))--> oracion(eng, o_s(GN, GV)), g_relativos(eng, Rel), oracion(eng, o_s(GN, GV)).
-%oracion(eng, o_comp(GN, GV))--> oracion(eng, o_s(GN, GV)), oracion(eng, o_comp(GN, GV)).
-%oracion(eng, o_comp(GN, GV))--> oracion(eng, o_s(GN, GV)).
-
-
-
-
-
-%g_nominal(esp, gn(N)) --> nombre(esp, N).
-%g_nominal(esp, gn(D,N)) --> determinante(esp, D), nombre(esp, N).
-%g_verbal(esp, gv(V)) --> verbo(esp, V).
-%g_adjetival(esp, gadj(Adj)) --> adjetivo(esp, Adj).
-%g_adverbial (esp, gadv(Adv)) --> adverbio(esp, Adv).
-%g_preposicional (esp, gp(Prep)) --> preposicion(esp, Prep).
-%g_conjuncion (esp, gc(Conj)) --> conjuncion(esp, Conj).
-%g_relativos (esp, gr(Rel)) --> relativos(esp, Rel).
-%g_nombre_propio(esp, g_nom_prop(Nom_Prop)) --> nombre_propio(esp, Nom_Prop).
-
-
-
-
-
-
-% ReglaS base: Una oración simple
-oracion(eng, GN_P, o(GN, GV, GADJ)) --> 
-    (g_nombre_propio(eng, GN);g_nominal(eng, GN)), g_verbal(eng, GV), (g_adjetival(eng, GADJ); g_nominal(eng, GADJ)).
-
-oracion(eng, GN_P, o(GV2, GADJ2)) --> 
-    g_nombre_propio(eng, GN_P),g_verbal(eng, GV2), (g_adjetival(eng, GADJ2); g_nominal(eng, GADJ2)).
+% Caso recursivo: acumula GV y OBJ
+construir_oracion_individual_aux(GN, [(GV, OBJ) | Rest], Acc, Oracion) :-
+    construir_oracion_individual_aux(GN, Rest, [OBJ, GV | Acc], Oracion).
 
 
-% Regla recursiva: Conjunción que une oraciones
+
+
+% ORACIÓN SIMPLE (grupo nominal o nombre propio + verbo + complemento)
+oracion(eng, o(GN, GV, GADJ)) --> 
+    (g_nombre_propio(eng, GN); g_nominal(eng, GN)),
+    g_verbal(eng, GV),
+    (g_adjetival(eng, GADJ); g_nominal(eng, GADJ)).
+
+% ORACIÓN COMPUESTA (coordinada con otra oración o relativa)
 oracion(eng, o(GN1, GV1, GADJ1, OracionRest)) --> 
-    (g_nombre_propio(eng, GN1);g_nominal(eng, GN1)), g_verbal(eng, GV1), (g_adjetival(eng, GADJ1); g_nominal(eng, GADJ1)),
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)) ; g_conjuncion(eng, conj(but))
-    ; g_relativos(eng, rel(while)); g_relativos(eng,rel(who)); g_relativos(eng, rel(that)); 
-    g_relativos(eng, rel(although))),
-    oracion(eng, GN1 ,OracionRest).
-
-
-
-
+    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)),
+    g_verbal(eng, GV1),
+    (g_adjetival(eng, GADJ1); g_nominal(eng, GADJ1)),
+    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
+     g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
+    oracion(eng, OracionRest).
 
 
 
@@ -71,7 +67,7 @@ g_conjuncion(eng, conj(but)) --> [but].
 g_relativos(eng, rel(while)) --> [while].
 g_relativos(eng, rel(who)) --> [who].
 g_relativos(eng, rel(that)) --> [that].
-g_relativos(eng, rel(althoug)) --> [although].
+g_relativos(eng, rel(although)) --> [although].
 
 
 
@@ -96,6 +92,7 @@ determinante(eng, det(X)) --> [X],{det(X)}.
 %det(el,the).
 %det(la,the, a). 
 det(the).
+det(a).
 
 %nombre(esp, n(X)) --> [X],{n(X,_)}.
 nombre(eng, n(X)) --> [X],{n(X)}.
@@ -132,6 +129,7 @@ nombre_propio(eng, n_p(X)) --> [X], {n_p(X)}.
 n_p(JOSE).
 n_p(MARY).
 n_p(HECTOR).
+n_p(IRENE).
 
 
 
@@ -161,6 +159,7 @@ v(writing).
 v(caught).
 v(saw).
 v(was).
+v(prefers).
 
 %adjetivo(esp, adj(X)) --> [X],{adj(X,_)}.
 adjetivo(eng, adj(X)) --> [X],{adj(X)}.
