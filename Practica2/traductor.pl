@@ -43,20 +43,59 @@ construir_oracion_individual_aux(GN, [(GV, OBJ) | Rest], Acc, Oracion) :-
 
 
 
-% ORACIÓN SIMPLE (grupo nominal o nombre propio + verbo + complemento)
-oracion(eng, o(GN, GV, GADJ)) --> 
-    (g_nombre_propio(eng, GN); g_nominal(eng, GN)),
-    g_verbal(eng, GV),
-    (g_adjetival(eng, GADJ); g_nominal(eng, GADJ)).
 
-% ORACIÓN COMPUESTA (coordinada con otra oración o relativa)
-oracion(eng, o(GN1, GV1, GADJ1, OracionRest)) --> 
-    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)),
-    g_verbal(eng, GV1),
-    (g_adjetival(eng, GADJ1); g_nominal(eng, GADJ1)),
+
+% ORACIÓN SIMPLE (grupo nominal o nombre propio + verbo)
+
+% ORACIÓN SIMPLE (grupo nominal o nombre propio + verbo + complemento)
+oracion(eng, o(GN, GV, OBJ)) --> 
+    (g_nombre_propio(eng, GN); g_nominal(eng, GN)), % Sujeto (nombre o nombre propio)
+    g_verbal(eng, GV),                             % Verbo
+    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)). % Adjetivo o complemento nominal
+
+oracion(eng, o(GN, GV)) --> 
+    (g_nombre_propio(eng, GN); g_nominal(eng, GN)), % Sujeto (nombre o nombre propio)
+    g_verbal(eng, GV).                             % Verbo
+
+% ORACIÓN COMPUESTA CON ADJETIVO O COMPLEMENTO
+oracion(eng, o(GN1, GV1, OBJ, OracionRest)) --> 
+    (((g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
+    g_verbal(eng, GV1),                              % Verbo
+    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)))
+    ;
+    ((g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
+    g_verbal(eng, GV1),                              % Verbo
+    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
+    sentencia_recursiva(eng, GV1),
+    )), 
+    % Adjetivo o complemento nominal
     (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
      g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
-    oracion(eng, OracionRest).
+    oracion(eng, OracionRest).  % Llamada recursiva para la oración coordinada
+
+
+% ORACIÓN COMPUESTA (coordinada con otra oración o relativa)
+oracion(eng, o(GN1, GV1, OracionRest)) --> 
+    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
+    g_verbal(eng, GV1),                              % Verbo
+    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
+     g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
+
+    oracion(eng, OracionRest).                        % Llamada recursiva para la oración coordinada
+
+
+                      
+% Regla recursiva para gestionar multiples verbos unidos por 'and'
+sentencia_recursiva(eng, v(V1)) --> 
+    g_conjuncion(eng, conj(and)),        % Conjunción 'and'
+    g_verbal(eng, v(V1)).                % Solo un verbo mas
+
+sentencia_recursiva(eng, v(V1, V2)) --> 
+    g_conjuncion(eng, conj(and)),        % Conjunción 'and'
+    g_verbal(eng, v(V2)),                % Segundo verbo
+    sentencia_recursiva(eng, v(V1, V2)).  % Recursión para continuar con mas verbos (si los hay)
+    
+
 
 
 
@@ -77,7 +116,7 @@ g_relativos(eng, rel(although)) --> [although].
 
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
-g_verbal(eng, gv(V1,V2)) --> verbo(eng,V1), verbo(eng, V2).
+g_verbal(eng, gv(V1,V2)) --> verbo(eng,V1),verbo(eng, V2).
 g_verbal(eng, gv(V)) --> verbo(eng, V).
 g_adjetival(eng, gadj(ADJ)) --> adjetivo(eng, ADJ).
 g_adverbial(eng, gadv(ADJ)) --> adverbio(eng, ADJ).
@@ -160,6 +199,7 @@ v(caught).
 v(saw).
 v(was).
 v(prefers).
+v(_, and, _).
 
 %adjetivo(esp, adj(X)) --> [X],{adj(X,_)}.
 adjetivo(eng, adj(X)) --> [X],{adj(X)}.
