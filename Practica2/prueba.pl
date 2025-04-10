@@ -1,16 +1,8 @@
 % ORACIÓN con SUJETOS COORDINADOS (la que ya tienes)
 oracion(eng, Oraciones) -->
-    (g_nominal_coord(eng, GNList),
+    g_nominal_coord(eng, GNList),
     estructura_verbal(eng, VerbosObjs),
-    { construir_oraciones(GNList, VerbosObjs, Oraciones) })
-    ;
-    ((g_nombre_propio(eng, GN),
-    verbos_coordinados(eng, GVList),
-    {
-        construir_oraciones_sujeto_simple(GN, GVList, Oraciones)
-    }))
-    
-    .
+    { construir_oraciones(GNList, VerbosObjs, Oraciones) }.
 
 % GRUPO NOMINAL COORDINADO (recursivo con nombres propios y/o nominales)
 g_nominal_coord(eng, [GN]) --> g_nombre_propio(eng, GN).
@@ -52,59 +44,32 @@ construir_oracion_individual_aux(GN, [(GV, OBJ) | Rest], Acc, Oracion) :-
 
 
 
-% ORACIÓN SIMPLE (grupo nominal o nombre propio + verbo + complemento)
-oracion(eng, o(GN, GV, OBJ)) --> 
-    (g_nombre_propio(eng, GN); g_nominal(eng, GN)), % Sujeto (nombre o nombre propio)
-    g_verbal(eng, GV),                             % Verbo
-    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)). % Adjetivo o complemento nominal
+% ORACIÓN con SUJETO SIMPLE y VERBOS COORDINADOS
+oracion(eng, Oraciones) -->
+    g_nombre_propio(eng, GN),
+    verbos_coordinados(eng, GVList),
+    {
+        construir_oraciones(GN, GVList, Oraciones)
+    }.
 
-oracion(eng, o(GN, GV)) --> 
-    (g_nombre_propio(eng, GN); g_nominal(eng, GN)), % Sujeto (nombre o nombre propio)
-    g_verbal(eng, GV).                             % Verbo
-
-% ORACIÓN COMPUESTA CON ADJETIVO O COMPLEMENTO
-oracion(eng, o(GN1, GV1, OBJ, OracionRest)) --> 
-    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
-    g_verbal(eng, GV1),                              % Verbo
-    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
-    % Adjetivo o complemento nominal
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
-     g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
-    oracion(eng, OracionRest).  % Llamada recursiva para la oración coordinada
-
-
-% ORACIÓN COMPUESTA (coordinada con otra oración o relativa)
-oracion(eng, o(GN1, GV1, OracionRest)) --> 
-    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
-    g_verbal(eng, GV1),                              % Verbo
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
-     g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
-
-    oracion(eng, OracionRest).                        % Llamada recursiva para la oración coordinada
-
-
-
-% VERBOS COORDINADOS: Uno o mas verbos unidos por conjunciones (ej. sings and dances)
+% VERBOS COORDINADOS: Uno o mas verbos unidos por conjunciones
 verbos_coordinados(eng, [GV]) --> g_verbal(eng, GV).
 verbos_coordinados(eng, [GV | Rest]) -->
     g_verbal(eng, GV),
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but))),  % Puedes agregar mas conjunciones si lo deseas
+    g_conjuncion(eng, _), % Aquí puedes manejar conjunciones como "and", "or", etc.
     verbos_coordinados(eng, Rest).
 
-% CONSTRUCTOR: Genera multiples oraciones con el mismo sujeto y cada verbo de la lista
-construir_oraciones_sujeto_simple(_, [], []).
-construir_oraciones_sujeto_simple(GN, [GV | Rest], [Oracion | OrRest]) :-
-    Oracion = o(GN, GV),
-    construir_oraciones_sujeto_simple(GN, Rest, OrRest).
+% Constructor para multiples oraciones con el mismo sujeto
+construir_oraciones(_, [], []).
+construir_oraciones(GN, [GV | Rest], [o(GN, GV) | OrRest]) :-
+    construir_oraciones(GN, Rest, OrRest).
 
-
-
-
-
-                    
-    
-
-
+% ORACIÓN COMPUESTA con 'while'
+oracion_compuesta(eng, [o(GN1, GV1) | Rest]) -->
+    g_nombre_propio(eng, GN1),
+    g_verbal(eng, GV1),
+    g_relativos(eng, rel(while)),
+    oracion(eng, Rest). % Llama recursivamente para la segunda parte
 
 
 % Regla para la conjunción 'and'
