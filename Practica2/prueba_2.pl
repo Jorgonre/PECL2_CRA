@@ -30,23 +30,17 @@ oracion(eng, Oraciones) -->
       ).
 
 % Fix the verbos_y_posible_nuevo_sujeto predicate
-verbos_y_posible_nuevo_sujeto(eng, GN, Oraciones) -->
+verbos_y_posible_nuevo_sujeto(eng, GN, [o(GN, GV) | RestOraciones]) -->
     g_verbal(eng, GV),
-    ( g_conjuncion(eng, conj(_)),
-      ( lookahead_proper_noun,  % Call the fixed lookahead
-        g_nombre_propio(eng, NewGN),
-        verbos_y_posible_nuevo_sujeto(eng, NewGN, RestOraciones),
-        { Oraciones = [o(GN, GV) | RestOraciones] }
-      ; verbos_y_posible_nuevo_sujeto(eng, GN, RestOraciones),
-        { Oraciones = [o(GN, GV) | RestOraciones] }
-      )
-    ; { Oraciones = [o(GN, GV)] }
-    ).
+    g_conjuncion(eng, conj(_)),
+    lookahead_nombre_propio,
+    g_nombre_propio(eng, NewGN),
+    verbos_y_posible_nuevo_sujeto(eng, NewGN, RestOraciones).
 
-% Properly implemented lookahead that checks without consuming
-lookahead_proper_noun(L, L) :-
-    L = [X|_],
-    n_p(X).
+verbos_y_posible_nuevo_sujeto(eng, GN, [o(GN, GV)]) -->
+    g_verbal(eng, GV).
+
+lookahead_nombre_propio --> [X], { n_p(X) }, [X].
 
 % GRUPO NOMINAL COORDINADO: Nombres propios unidos por conjunciones
 g_nominal_coord(eng, [GN]) --> g_nombre_propio(eng, GN).
@@ -55,7 +49,8 @@ g_nominal_coord(eng, [GN | Rest]) -->
     g_conjuncion(eng, _),
     g_nominal_coord(eng, Rest).
 
-% ESTRUCTURA VERBAL: Verbo + objeto nominal
+estructura_verbal(eng, [(GV)]) --> g_verbal(eng, GV).  % solo verbos
+
 estructura_verbal(eng, [(GV, OBJ)]) -->
     g_verbal(eng, GV),
     g_nominal(eng, OBJ).
@@ -99,12 +94,39 @@ g_relativos(eng, rel(although)) --> [although].
 % GRUPOS SINTÁCTICOS
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
-g_verbal(eng, gv(V1,V2)) --> verbo(eng,V1), verbo(eng, V2).
+
+
+g_verbal(eng, gv(V1, V2)) --> 
+    verbo(eng, V1), 
+    g_conjuncion(eng, _), 
+    verbo(eng, V2).
+
+g_verbal(eng, gv(V1, V2, V3)) -->
+    verbo(eng, V1), 
+    g_conjuncion(eng, _), 
+    verbo(eng, V2),
+    g_conjuncion(eng, _), 
+    verbo(eng, V3).
+
+% fallback individual
 g_verbal(eng, gv(V)) --> verbo(eng, V).
+
+
 g_adjetival(eng, gadj(ADJ)) --> adjetivo(eng, ADJ).
 g_adverbial(eng, gadv(ADV)) --> adverbio(eng, ADV).
 g_preposicional(eng, gp(PREP)) --> preposicion(eng, PREP).
-g_nombre_propio(eng, g_nom_prop(NOM_PROP)) --> nombre_propio(eng, NOM_PROP).
+
+% Nombre propio simple
+g_nombre_propio(eng, g_nom_prop(NP)) -->
+    nombre_propio(eng, NP).
+
+% Nombre propio compuesto con conjunción
+g_nombre_propio(eng, g_nom_prop(NP1, NP2)) -->
+    nombre_propio(eng, NP1),
+    g_conjuncion(eng, _),
+    nombre_propio(eng, NP2).
+
+
 
 % DETERMINANTES
 determinante(eng, det(X)) --> [X], {det(X)}.

@@ -9,7 +9,6 @@ oracion(eng, Oraciones) -->
     {
         construir_oraciones_sujeto_simple(GN, GVList, Oraciones)
     }))
-    
     .
 
 % GRUPO NOMINAL COORDINADO (recursivo con nombres propios y/o nominales)
@@ -193,6 +192,7 @@ v(clears).
 //Hay alguna forma de que se tenga solo uno para drinks?//
 v(drinks).
 v(drink).
+v(dances).
 v(reads).
 v(eat).
 v(eats).
