@@ -96,10 +96,39 @@ g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
 
 
+
 g_verbal(eng, gv(V1, V2)) --> 
     verbo(eng, V1), 
     g_conjuncion(eng, _), 
     verbo(eng, V2).
+
+g_verbal(eng, gv(V, GN, V2)) -->
+        verbo(eng, V),
+        g_nominal(eng, GN),
+        g_conjuncion(eng, _),
+        verbo(eng, V2).
+g_verbal(eng, gv(V, ADJ, N)) -->
+        verbo(eng, V),
+        g_adjetival(eng, ADJ),
+        g_nominal(eng, N).
+
+g_verbal(eng, gv(V, N, ADJ)) -->
+        verbo(eng, V),
+        g_nominal(eng, N),
+        g_adjetival(eng, ADJ).
+
+g_verbal(eng, gv(V, ADV, ADJ, N)) -->
+        verbo(eng, V),
+        g_adverbial(eng, ADV),
+        g_adjetival(eng, ADJ),
+        g_nominal(eng, N).
+
+g_verbal(eng, gv(V, ADV, N, ADJ)) -->
+        verbo(eng, V),
+        g_adverbial(eng, ADV),
+        g_nominal(eng, N),
+        g_adjetival(eng, ADJ).
+
 
 g_verbal(eng, gv(V1, V2, V3)) -->
     verbo(eng, V1), 
@@ -198,6 +227,7 @@ adj(tall).
 adj(agile).
 adj(delicate).
 adj(red).
+adj(reds).
 adj(powerful).
 adj(slow).
 adj(grey).
@@ -207,6 +237,7 @@ adverbio(eng, adv(Y)) --> [Y], {adv(X,Y)}, !.
 adverbio(eng, adv(X)) --> [X], {adv(X)}.
 adv(little).
 adv(quite).
+adv(only).
 adv(quite, _).
 
 % PREPOSICIONES
