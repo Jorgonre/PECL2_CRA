@@ -1,23 +1,61 @@
-% ORACIÓN con SUJETOS COORDINADOS (la que ya tienes)
 oracion(eng, Oraciones) -->
-    (g_nominal_coord(eng, GNList),
-    estructura_verbal(eng, VerbosObjs),
-    { construir_oraciones(GNList, VerbosObjs, Oraciones) })
-    ;
-    ((g_nombre_propio(eng, GN),
-    verbos_coordinados(eng, GVList),
-    {
-        construir_oraciones_sujeto_simple(GN, GVList, Oraciones)
-    }))
-    .
+    ( g_nominal_coord(eng, GNList),
+      estructura_verbal(eng, VerbosObjs),
+      { construir_oraciones(GNList, VerbosObjs, Oraciones) }
+    )
+    ; ( g_nombre_propio(eng, GN),
+        verbos_y_posible_nuevo_sujeto(eng, GN, Oraciones)
+      )
+    ; ( (g_nombre_propio(eng, GN); g_nominal(eng, GN)),
+        g_verbal(eng, GV),
+        { Oraciones = [o(GN, GV)] }
+      )
+    ; ( (g_nombre_propio(eng, GN); g_nominal(eng, GN)),
+        g_verbal(eng, GV),
+        (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
+        { Oraciones = [o(GN, GV, OBJ)] }
+      )
+    ; ( (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)),
+        g_verbal(eng, GV1),
+        (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
+        (g_conjuncion(eng, conj(_)); g_relativos(eng, rel(_))),
+        oracion(eng, OracionRest),
+        { Oraciones = [o(GN1, GV1, OBJ, OracionRest)] }
+      )
+    ; ( (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)),
+        g_verbal(eng, GV1),
+        (g_conjuncion(eng, conj(_)); g_relativos(eng, rel(_))),
+        oracion(eng, OracionRest),
+        { Oraciones = [o(GN1, GV1, OracionRest)] }
+      ).
 
-% GRUPO NOMINAL COORDINADO (recursivo con nombres propios y/o nominales)
+% Fix the verbos_y_posible_nuevo_sujeto predicate
+verbos_y_posible_nuevo_sujeto(eng, GN, Oraciones) -->
+    g_verbal(eng, GV),
+    ( g_conjuncion(eng, conj(_)),
+      ( lookahead_proper_noun,  % Call the fixed lookahead
+        g_nombre_propio(eng, NewGN),
+        verbos_y_posible_nuevo_sujeto(eng, NewGN, RestOraciones),
+        { Oraciones = [o(GN, GV) | RestOraciones] }
+      ; verbos_y_posible_nuevo_sujeto(eng, GN, RestOraciones),
+        { Oraciones = [o(GN, GV) | RestOraciones] }
+      )
+    ; { Oraciones = [o(GN, GV)] }
+    ).
+
+% Properly implemented lookahead that checks without consuming
+lookahead_proper_noun(L, L) :-
+    L = [X|_],
+    n_p(X).
+
+% GRUPO NOMINAL COORDINADO: Nombres propios unidos por conjunciones
 g_nominal_coord(eng, [GN]) --> g_nombre_propio(eng, GN).
 g_nominal_coord(eng, [GN | Rest]) -->
     g_nombre_propio(eng, GN),
     g_conjuncion(eng, _),
     g_nominal_coord(eng, Rest).
 
+% ESTRUCTURA VERBAL: Verbo + objeto nominal
 estructura_verbal(eng, [(GV, OBJ)]) -->
     g_verbal(eng, GV),
     g_nominal(eng, OBJ).
@@ -38,7 +76,7 @@ construir_oraciones([GN | RestGNs], VerbosObjetos, [O | Ors]) :-
 construir_oracion_individual(GN, VerbosObjetos, Oracion) :-
     construir_oracion_individual_aux(GN, VerbosObjetos, [], Oracion).
 
-% Caso base recursivo: cuando ya no hay mas verbos y objetos
+% Caso base recursivo: cuando no hay mas verbos y objetos
 construir_oracion_individual_aux(GN, [], Acc, Oracion) :-
     reverse(Acc, Partes),
     Oracion =.. [o, GN | Partes].
@@ -47,103 +85,34 @@ construir_oracion_individual_aux(GN, [], Acc, Oracion) :-
 construir_oracion_individual_aux(GN, [(GV, OBJ) | Rest], Acc, Oracion) :-
     construir_oracion_individual_aux(GN, Rest, [OBJ, GV | Acc], Oracion).
 
-
-
-
-
-% ORACIÓN SIMPLE (grupo nominal o nombre propio + verbo + complemento)
-oracion(eng, o(GN, GV, OBJ)) --> 
-    (g_nombre_propio(eng, GN); g_nominal(eng, GN)), % Sujeto (nombre o nombre propio)
-    g_verbal(eng, GV),                             % Verbo
-    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)). % Adjetivo o complemento nominal
-
-oracion(eng, o(GN, GV)) --> 
-    (g_nombre_propio(eng, GN); g_nominal(eng, GN)), % Sujeto (nombre o nombre propio)
-    g_verbal(eng, GV).                             % Verbo
-
-% ORACIÓN COMPUESTA CON ADJETIVO O COMPLEMENTO
-oracion(eng, o(GN1, GV1, OBJ, OracionRest)) --> 
-    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
-    g_verbal(eng, GV1),                              % Verbo
-    (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
-    % Adjetivo o complemento nominal
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
-     g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
-    oracion(eng, OracionRest).  % Llamada recursiva para la oración coordinada
-
-
-% ORACIÓN COMPUESTA (coordinada con otra oración o relativa)
-oracion(eng, o(GN1, GV1, OracionRest)) --> 
-    (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)), % Sujeto
-    g_verbal(eng, GV1),                              % Verbo
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but));
-     g_relativos(eng, rel(while)); g_relativos(eng, rel(who)); g_relativos(eng, rel(that)); g_relativos(eng, rel(although))),
-
-    oracion(eng, OracionRest).                        % Llamada recursiva para la oración coordinada
-
-
-
-% VERBOS COORDINADOS: Uno o mas verbos unidos por conjunciones (ej. sings and dances)
-verbos_coordinados(eng, [GV]) --> g_verbal(eng, GV).
-verbos_coordinados(eng, [GV | Rest]) -->
-    g_verbal(eng, GV),
-    (g_conjuncion(eng, conj(and)); g_conjuncion(eng, conj(or)); g_conjuncion(eng, conj(but))),  % Puedes agregar mas conjunciones si lo deseas
-    verbos_coordinados(eng, Rest).
-
-% CONSTRUCTOR: Genera multiples oraciones con el mismo sujeto y cada verbo de la lista
-construir_oraciones_sujeto_simple(_, [], []).
-construir_oraciones_sujeto_simple(GN, [GV | Rest], [Oracion | OrRest]) :-
-    Oracion = o(GN, GV),
-    construir_oraciones_sujeto_simple(GN, Rest, OrRest).
-
-
-
-
-
-                    
-    
-
-
-
-
-% Regla para la conjunción 'and'
+% CONJUNCIONES
 g_conjuncion(eng, conj(and)) --> [and].
 g_conjuncion(eng, conj(or)) --> [or].
 g_conjuncion(eng, conj(but)) --> [but].
+
+% RELATIVOS
 g_relativos(eng, rel(while)) --> [while].
 g_relativos(eng, rel(who)) --> [who].
 g_relativos(eng, rel(that)) --> [that].
 g_relativos(eng, rel(although)) --> [although].
 
-
-
-
-
-
-
+% GRUPOS SINTÁCTICOS
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
-g_verbal(eng, gv(V1,V2)) --> verbo(eng,V1),verbo(eng, V2).
+g_verbal(eng, gv(V1,V2)) --> verbo(eng,V1), verbo(eng, V2).
 g_verbal(eng, gv(V)) --> verbo(eng, V).
 g_adjetival(eng, gadj(ADJ)) --> adjetivo(eng, ADJ).
-g_adverbial(eng, gadv(ADJ)) --> adverbio(eng, ADJ).
-g_preposicional (eng, gp(PREP)) --> preposicion(eng, PREP).
-%g_conjuncion (eng, gc(CONJ)) --> conjuncion(eng, CONJ).
-%g_relativos (eng, gr(REL)) --> relativos(eng, REL).
+g_adverbial(eng, gadv(ADV)) --> adverbio(eng, ADV).
+g_preposicional(eng, gp(PREP)) --> preposicion(eng, PREP).
 g_nombre_propio(eng, g_nom_prop(NOM_PROP)) --> nombre_propio(eng, NOM_PROP).
 
-
-%determinante(esp, det(X)) --> [X],{det(X,_)}.
-determinante(eng, det(X)) --> [X],{det(X)}.
-%det(el,the).
-%det(la,the, a). 
+% DETERMINANTES
+determinante(eng, det(X)) --> [X], {det(X)}.
 det(the).
 det(a).
 
-%nombre(esp, n(X)) --> [X],{n(X,_)}.
-nombre(eng, n(X)) --> [X],{n(X)}.
-%n(hombre,man).
-%n(mujer,woman).
+% NOMBRES
+nombre(eng, n(X)) --> [X], {n(X)}.
 n(dog).
 n(table).
 n(coffee).
@@ -156,7 +125,7 @@ n(philosophy).
 n(law).
 n(juice).
 n(afternoons).
-n(climbing, _).
+n(climbing).
 n(apples).
 n(word).
 n(processor).
@@ -168,31 +137,21 @@ n(man).
 n(yesterday).
 n(neighbour).
 
-
-
-
+% NOMBRES PROPIOS
 nombre_propio(eng, n_p(X)) --> [X], {n_p(X)}.
 n_p(JOSE).
 n_p(MARY).
 n_p(HECTOR).
 n_p(IRENE).
 
-
-
-
-verbo(eng, v(Z)) --> [Z],{v(X,Y,Z)}.
-verbo(eng, v(Y)) --> [Y],{v(X,Y)}.
-verbo(eng, v(X)) --> [X],{v(X)}.
-
-
+% VERBOS
+verbo(eng, v(Y)) --> [Y], {v(X,Y)}.
+verbo(eng, v(X)) --> [X], {v(X)}.
 v(is).
 v(is, _).
-v(is, _, _). //Para la estructura is used to
 v(clears).
-//Hay alguna forma de que se tenga solo uno para drinks?//
 v(drinks).
 v(drink).
-v(dances).
 v(reads).
 v(eat).
 v(eats).
@@ -207,11 +166,10 @@ v(caught).
 v(saw).
 v(was).
 v(prefers).
-v(_, and, _).
+v(dances).
 
-%adjetivo(esp, adj(X)) --> [X],{adj(X,_)}.
-adjetivo(eng, adj(X)) --> [X],{adj(X)}.
-%adj(bonito, alto).
+% ADJETIVOS
+adjetivo(eng, adj(X)) --> [X], {adj(X)}.
 adj(dark-skinned).
 adj(blue).
 adj(tall).
@@ -222,30 +180,17 @@ adj(powerful).
 adj(slow).
 adj(grey).
 
-
-%adverbio(esp, adv(X)) --> [X],{adv(X,_)}.
-adverbio(eng, adv(Y)) --> [Y],{adv(X,Y)}.
-adverbio(eng, adv(X)) --> [X],{adv(X)}.
-%adv(mucho, poco).
+% ADVERBIOS
+adverbio(eng, adv(Y)) --> [Y], {adv(X,Y)}, !.
+adverbio(eng, adv(X)) --> [X], {adv(X)}.
 adv(little).
 adv(quite).
-adv(quite, _). %Para el "quite a"
+adv(quite, _).
 
-
-%preposicion(esp, prep(X)) --> [X],{prep(X,_)}.
-preposicion(eng, prep(X)) --> [X],{prep(X)}.
-%prep(en, de).
+% PREPOSICIONES
+preposicion(eng, prep(X)) --> [X], {prep(X)}.
 prep(at).
 
-%conjuncion(esp, conj(X)) --> [X],{conj(X,_)}.
-%conjuncion(eng, conj(X)) --> [X],{conj(X)}.
-%conj(o, y, pero).
-%conj(or).
-
-%relativos(esp, rel(X)) --> [X],{rel(X,_)}.
-%relativos(eng, rel(X)) --> [X],{rel(X)}.
-%rel(que, quien).
-
-puntuacion(_, punt(X))-->[X],{punt(X)}.
-%puntuacion(_, punt(X))--> [X],{punt(X,Y)}.
+% PUNTUACIÓN
+puntuacion(_, punt(X)) --> [X], {punt(X)}.
 puntuacion(-).
