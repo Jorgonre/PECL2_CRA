@@ -1,7 +1,13 @@
+% CASO 2: Frase con sujeto omitido internamente (ya maneja sus propias conjunciones)
+oracion(eng, Os) -->
+    oracion_sujeto_omitido(eng, Os).
+
 oracion(eng, [O | Os]) -->
-    oracion_simple(eng, O),
+    (oracion_simple(eng, O)),
     g_conjuncion(eng, _),
     oracion(eng, Os).
+
+
 
 oracion(eng, [O]) -->
     oracion_simple(eng, O).
@@ -9,6 +15,35 @@ oracion(eng, [O]) -->
 oracion_simple(eng, o(Suj, GV)) -->
     (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
     g_verbal(eng, GV).
+
+
+% Caso general recursivo: sujeto explícito + varios predicados unidos por conjunción
+oracion_sujeto_omitido(eng, [o(Suj, GV1) | Resto]) -->
+    (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
+    g_verbal(eng, GV1),
+    (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
+    g_verbal(eng, GV2),
+    { Or = o(Suj, GV2) },
+    (   % Si hay mas conjunciones y verbos, seguimos
+        (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
+        oracion_sujeto_omitido_resto(eng, Suj, Mas),
+        { Resto = [Or | Mas] }
+    ;
+        % Si no hay mas conjunciones, terminamos
+        { Resto = [Or] }
+    ).
+
+% Parte recursiva: sigue con mas verbos
+oracion_sujeto_omitido_resto(eng, Suj, [o(Suj, GV) | Resto]) -->
+    g_verbal(eng, GV),
+    (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
+    oracion_sujeto_omitido_resto(eng, Suj, Resto).
+
+% Base de la recursión
+oracion_sujeto_omitido_resto(eng, Suj, [o(Suj, GV)]) -->
+    g_verbal(eng, GV).
+
+
 
 
 % CONJUNCIONES
@@ -131,6 +166,9 @@ n_p(IRENE).
 % VERBOS
 verbo(eng, v(Y)) --> [Y], {v(X,Y)}.
 verbo(eng, v(X)) --> [X], {v(X)}.
+verbo(eng, v(is, G)) --> [is, G], { gerundio(G) }.
+verbo(eng, v(was, G)) --> [was, G], { gerundio(G) }.
+verbo(eng, v(are, G)) --> [are, G], { gerundio(G) }.
 v(is).
 v(is, _).
 v(clears).
@@ -151,6 +189,17 @@ v(saw).
 v(was).
 v(prefers).
 v(dances).
+
+
+
+gerundio(studying).
+gerundio(writing).
+gerundio(climbing).
+gerundio(drinking).
+gerundio(singing).
+gerundio(eating).
+
+
 
 % ADJETIVOS
 adjetivo(eng, adj(X)) --> [X], {adj(X)}.
