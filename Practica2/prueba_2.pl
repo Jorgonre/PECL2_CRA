@@ -88,6 +88,8 @@ coma --> [coma].
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
 
+
+
 g_verbal(eng, gv(V, OBJ))-->
     verbo(eng, V),
     (g_nominal(eng, OBJ); g_adjetival(eng, OBJ)).
@@ -123,6 +125,20 @@ g_verbal(eng, gv(V, ADV, N, ADJ)) -->
         g_adverbial(eng, ADV),
         g_nominal(eng, N),
         g_adjetival(eng, ADJ).
+
+
+/*ESTA VA A SER MUY ESPECÍFICA, 
+SE PUEDE DEJAR ASÍ O GENERALIZAR MÁS ADELANTE
+*/
+g_verbal(eng, gv(V, PREP1, N1, PREP2, N2)) -->
+        verbo(eng, V),
+        g_preposicional(eng, PREP1),
+        g_nominal(eng, N1),
+        g_preposicional(eng, PREP2),
+        g_nominal(eng, N2).
+
+
+
 
 
 g_verbal(eng, gv(V1, V2, V3)) -->
@@ -161,6 +177,9 @@ det(a).
 
 % NOMBRES
 nombre(eng, n(X)) --> [X], {n(X)}.
+nombre(eng, n(comp(X,Y))) --> [X, Y], {nombre_compuesto(X,Y)}.
+
+
 n(dog).
 n(table).
 n(coffee).
@@ -184,7 +203,9 @@ n(cat).
 n(man).
 n(yesterday).
 n(neighbour).
-n(climbing wall).
+
+
+nombre_compuesto(climbing, wall).
 
 
 % NOMBRES PROPIOS
@@ -208,6 +229,7 @@ v(clears).
 v(drinks).
 v(drink).
 v(reads).
+v(climbs).
 v(eat).
 v(eats).
 v(sings).
@@ -222,7 +244,7 @@ v(saw).
 v(was).
 v(prefers).
 v(dances).
-v(climbs).
+
 
 
 
