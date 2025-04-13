@@ -78,6 +78,7 @@ g_conjuncion(eng, conj(but)) --> [but].
 % RELATIVOS
 g_relativos(eng, rel(while)) --> [while].
 g_relativos(eng, rel(who)) --> [who].
+g_relativos(eng, rel(who)) --> [which].
 g_relativos(eng, rel(that)) --> [that].
 g_relativos(eng, rel(although)) --> [although].
 
@@ -125,11 +126,12 @@ g_verbal(eng, gv(V, ADV, ADJ, N)) -->
         g_adjetival(eng, ADJ),
         g_nominal(eng, N).
 
-g_verbal(eng, gv(V, ADV, N, ADJ)) -->
+g_verbal(eng, gv(V, ADV, PREP, ADJ, N)) -->
         verbo(eng, V),
         g_adverbial(eng, ADV),
-        g_nominal(eng, N),
-        g_adjetival(eng, ADJ).
+        g_preposicional(eng, PREP),
+        g_adjetival(eng, ADJ),
+        g_nominal(eng, N).
 
 
 /*ESTA VA A SER MUY ESPECÍFICA, 
@@ -142,6 +144,11 @@ g_verbal(eng, gv(V, PREP1, N1, PREP2, N2)) -->
         g_preposicional(eng, PREP2),
         g_nominal(eng, N2).
 
+g_verbal(eng, gv(V1, PREP, V2, N)) -->
+        verbo(eng, V1),
+        g_preposicional(eng, PREP),
+        verbo(eng, V2),
+        g_nominal(eng, N).
 
 
 
@@ -187,8 +194,11 @@ det(the).
 det(a).
 
 % NOMBRES
+nombre(eng, n(Nombre)) -->
+    [X, Y],
+    { nombre_compuesto(X, Y),
+      atomic_list_concat([X, Y], '_', Nombre) }.
 nombre(eng, n(X)) --> [X], {n(X)}.
-nombre(eng, n(comp(X,Y))) --> [X, Y], {nombre_compuesto(X,Y)}.
 
 
 n(dog).
@@ -217,6 +227,7 @@ n(neighbour).
 
 
 nombre_compuesto(climbing, wall).
+nombre_compuesto(word, processor).
 
 
 % NOMBRES PROPIOS
@@ -234,6 +245,8 @@ verbo(eng, v(X)) --> [X], {v(X)}.
 verbo(eng, v(is, G)) --> [is, G], { gerundio(G) }.
 verbo(eng, v(was, G)) --> [was, G], { gerundio(G) }.
 verbo(eng, v(are, G)) --> [are, G], { gerundio(G) }.
+verbo(eng, v(is, P)) --> [is, P], { pasado(P) }.
+
 v(is).
 v(is, _).
 v(clears).
@@ -266,6 +279,8 @@ gerundio(drinking).
 gerundio(singing).
 gerundio(eating).
 
+pasado(used).
+
 
 
 % ADJETIVOS
@@ -283,17 +298,16 @@ adj(slow).
 adj(grey).
 
 % ADVERBIOS
-adverbio(eng, adv(Y)) --> [Y], {adv(X,Y)}, !.
 adverbio(eng, adv(X)) --> [X], {adv(X)}.
 adv(little).
 adv(quite).
 adv(very).
 adv(only).
-adv(quite, _).
 
 % PREPOSICIONES
 preposicion(eng, prep(X)) --> [X], {prep(X)}.
 prep(at).
 prep(on).
 prep(in).
-
+prep(a).
+prep(to).
