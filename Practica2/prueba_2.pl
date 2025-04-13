@@ -1,4 +1,6 @@
 oracion(eng, [O | Os]) -->
+    (oracion_con_subordinada(eng, O))
+    ;
     (oracion_sujeto_omitido(eng, O))
     ;
     ((oracion_simple(eng, O)),
@@ -44,6 +46,17 @@ oracion_sujeto_omitido_resto_verbs_collect(eng, [GV | Resto]) -->
         { Resto = [] }
     ).
 
+
+% Maneja oraciones con una subordinada relativa
+oracion_con_subordinada(eng, [o(Suj, GVSub), o(Suj, GVMain)]) -->
+    (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
+    ([','];coma),
+    g_relativos(eng, rel(_)), % e.g. who
+    g_verbal(eng, GVSub),
+    ([',']; coma),
+    g_verbal(eng, GVMain).
+
+
 % Descompone un sujeto compuesto en una lista de sujetos individuales
 sujetos_de_compuesto(g_nom_prop(NP1, NP2), [g_nom_prop(NP1), g_nom_prop(NP2)]) :- !.
 sujetos_de_compuesto(Sujeto, [Sujeto]).
@@ -67,6 +80,9 @@ g_relativos(eng, rel(while)) --> [while].
 g_relativos(eng, rel(who)) --> [who].
 g_relativos(eng, rel(that)) --> [that].
 g_relativos(eng, rel(although)) --> [although].
+
+coma --> [','].
+coma --> [coma].
 
 % GRUPOS SINTÁCTICOS
 g_nominal(eng, gn(N)) --> nombre(eng, N).
@@ -168,6 +184,8 @@ n(cat).
 n(man).
 n(yesterday).
 n(neighbour).
+n(climbing wall).
+
 
 % NOMBRES PROPIOS
 nombre_propio(eng, n_p(X)) --> [X], {n_p(X)}.
@@ -204,6 +222,7 @@ v(saw).
 v(was).
 v(prefers).
 v(dances).
+v(climbs).
 
 
 
@@ -219,6 +238,7 @@ gerundio(eating).
 % ADJETIVOS
 adjetivo(eng, adj(X)) --> [X], {adj(X)}.
 adj(dark-skinned).
+adj(agile).
 adj(blue).
 adj(tall).
 adj(agile).
@@ -240,7 +260,6 @@ adv(quite, _).
 % PREPOSICIONES
 preposicion(eng, prep(X)) --> [X], {prep(X)}.
 prep(at).
+prep(on).
+prep(in).
 
-% PUNTUACIÓN
-puntuacion(_, punt(X)) --> [X], {punt(X)}.
-puntuacion(-).
