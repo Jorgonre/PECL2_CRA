@@ -1,84 +1,15 @@
-oracion(eng, Oraciones) -->
-    ( g_nominal_coord(eng, GNList),
-      estructura_verbal(eng, VerbosObjs),
-      { construir_oraciones(GNList, VerbosObjs, Oraciones) }
-    )
-    ; ( g_nombre_propio(eng, GN),
-        verbos_y_posible_nuevo_sujeto(eng, GN, Oraciones)
-      )
-    ; ( (g_nombre_propio(eng, GN); g_nominal(eng, GN)),
-        g_verbal(eng, GV),
-        { Oraciones = [o(GN, GV)] }
-      )
-    ; ( (g_nombre_propio(eng, GN); g_nominal(eng, GN)),
-        g_verbal(eng, GV),
-        (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
-        { Oraciones = [o(GN, GV, OBJ)] }
-      )
-    ; ( (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)),
-        g_verbal(eng, GV1),
-        (g_adjetival(eng, OBJ); g_nominal(eng, OBJ)),
-        (g_conjuncion(eng, conj(_)); g_relativos(eng, rel(_))),
-        oracion(eng, OracionRest),
-        { Oraciones = [o(GN1, GV1, OBJ, OracionRest)] }
-      )
-    ; ( (g_nombre_propio(eng, GN1); g_nominal(eng, GN1)),
-        g_verbal(eng, GV1),
-        (g_conjuncion(eng, conj(_)); g_relativos(eng, rel(_))),
-        oracion(eng, OracionRest),
-        { Oraciones = [o(GN1, GV1, OracionRest)] }
-      ).
+oracion(eng, [O | Os]) -->
+    oracion_simple(eng, O),
+    g_conjuncion(eng, _),
+    oracion(eng, Os).
 
-% Fix the verbos_y_posible_nuevo_sujeto predicate
-verbos_y_posible_nuevo_sujeto(eng, GN, [o(GN, GV) | RestOraciones]) -->
-    g_verbal(eng, GV),
-    g_conjuncion(eng, conj(_)),
-    lookahead_nombre_propio,
-    g_nombre_propio(eng, NewGN),
-    verbos_y_posible_nuevo_sujeto(eng, NewGN, RestOraciones).
+oracion(eng, [O]) -->
+    oracion_simple(eng, O).
 
-verbos_y_posible_nuevo_sujeto(eng, GN, [o(GN, GV)]) -->
+oracion_simple(eng, o(Suj, GV)) -->
+    (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
     g_verbal(eng, GV).
 
-lookahead_nombre_propio --> [X], { n_p(X) }, [X].
-
-% GRUPO NOMINAL COORDINADO: Nombres propios unidos por conjunciones
-g_nominal_coord(eng, [GN]) --> g_nombre_propio(eng, GN).
-g_nominal_coord(eng, [GN | Rest]) -->
-    g_nombre_propio(eng, GN),
-    g_conjuncion(eng, _),
-    g_nominal_coord(eng, Rest).
-
-estructura_verbal(eng, [(GV)]) --> g_verbal(eng, GV).  % solo verbos
-
-estructura_verbal(eng, [(GV, OBJ)]) -->
-    g_verbal(eng, GV),
-    g_nominal(eng, OBJ).
-
-estructura_verbal(eng, [(GV, OBJ) | Rest]) -->
-    g_verbal(eng, GV),
-    g_nominal(eng, OBJ),
-    g_conjuncion(eng, _),
-    estructura_verbal(eng, Rest).
-
-% CONSTRUCTOR DE MÚLTIPLES ORACIONES PARA VARIOS SUJETOS
-construir_oraciones([], _, []).
-construir_oraciones([GN | RestGNs], VerbosObjetos, [O | Ors]) :-
-    construir_oracion_individual(GN, VerbosObjetos, O),
-    construir_oraciones(RestGNs, VerbosObjetos, Ors).
-
-% Genera una oración individual para un GN con multiples verbos y objetos
-construir_oracion_individual(GN, VerbosObjetos, Oracion) :-
-    construir_oracion_individual_aux(GN, VerbosObjetos, [], Oracion).
-
-% Caso base recursivo: cuando no hay mas verbos y objetos
-construir_oracion_individual_aux(GN, [], Acc, Oracion) :-
-    reverse(Acc, Partes),
-    Oracion =.. [o, GN | Partes].
-
-% Caso recursivo: acumula GV y OBJ
-construir_oracion_individual_aux(GN, [(GV, OBJ) | Rest], Acc, Oracion) :-
-    construir_oracion_individual_aux(GN, Rest, [OBJ, GV | Acc], Oracion).
 
 % CONJUNCIONES
 g_conjuncion(eng, conj(and)) --> [and].
@@ -95,7 +26,9 @@ g_relativos(eng, rel(although)) --> [although].
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
 
-
+g_verbal(eng, gv(V, OBJ))-->
+    verbo(eng, V),
+    (g_nominal(eng, OBJ); g_adjetival(eng, OBJ)).
 
 g_verbal(eng, gv(V1, V2)) --> 
     verbo(eng, V1), 
