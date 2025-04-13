@@ -74,6 +74,10 @@ generar_oraciones([S | Sujetos], GVs, Resultado) :-
 g_conjuncion(eng, conj(and)) --> [and].
 g_conjuncion(eng, conj(or)) --> [or].
 g_conjuncion(eng, conj(but)) --> [but].
+/*
+No sé si este de but it está bien planteado
+*/
+g_conjuncion(eng, conj(but_it)) --> [but, it].
 
 % RELATIVOS
 g_relativos(eng, rel(while)) --> [while].
@@ -150,7 +154,15 @@ g_verbal(eng, gv(V1, PREP, V2, N)) -->
         verbo(eng, V2),
         g_nominal(eng, N).
 
-
+g_verbal(eng, gv(V1, PREP1, ADV, ADJ, N1, PREP2, V2, N2)) -->
+        verbo(eng, V1),
+        g_preposicional(eng, PREP1),
+        g_adverbial(eng, ADV),
+        g_adjetival(eng, ADJ),
+        g_nominal(eng, N1),
+        g_preposicional(eng, PREP2),
+        g_verbal(eng, V2),
+        g_nominal(eng, N2).
 
 
 g_verbal(eng, gv(V1, V2, V3)) -->
@@ -311,3 +323,4 @@ prep(on).
 prep(in).
 prep(a).
 prep(to).
+prep(for).
