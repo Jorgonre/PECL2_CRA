@@ -1,8 +1,8 @@
 oracion(eng, [O | Os]) -->
-    (oracion_sujeto_omitido(eng, Os))
+    (oracion_sujeto_omitido(eng, O))
     ;
     ((oracion_simple(eng, O)),
-    g_conjuncion(eng, _),
+    (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
     oracion(eng, Os)).
 
 
@@ -15,33 +15,46 @@ oracion_simple(eng, o(Suj, GV)) -->
     g_verbal(eng, GV).
 
 
-% Caso general recursivo: sujeto explícito + varios predicados unidos por conjunción
-oracion_sujeto_omitido(eng, [o(Suj, GV1) | Resto]) -->
+oracion_sujeto_omitido(eng, OracionesTotales) -->
     (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
     g_verbal(eng, GV1),
     (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
     g_verbal(eng, GV2),
-    { Or = o(Suj, GV2) },
-    (   % Si hay mas conjunciones y verbos, seguimos
+    {
+        sujetos_de_compuesto(Suj, Sujetos),
+        GVsIniciales = [GV1, GV2]
+    },
+    (
         (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
-        oracion_sujeto_omitido_resto(eng, Suj, Mas),
-        { Resto = [Or | Mas] }
+        oracion_sujeto_omitido_resto_verbs_collect(eng, GVsResto),
+        { append(GVsIniciales, GVsResto, TodosGVs),
+          generar_oraciones(Sujetos, TodosGVs, OracionesTotales)
+        }
     ;
-        % Si no hay mas conjunciones, terminamos
-        { Resto = [Or] }
+        { generar_oraciones(Sujetos, GVsIniciales, OracionesTotales) }
     ).
 
-% Parte recursiva: sigue con mas verbos
-oracion_sujeto_omitido_resto(eng, Suj, [o(Suj, GV) | Resto]) -->
+% Recolecta todos los GV restantes recursivamente
+oracion_sujeto_omitido_resto_verbs_collect(eng, [GV | Resto]) -->
     g_verbal(eng, GV),
-    (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
-    oracion_sujeto_omitido_resto(eng, Suj, Resto).
+    (
+        (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
+        oracion_sujeto_omitido_resto_verbs_collect(eng, Resto)
+    ;
+        { Resto = [] }
+    ).
 
-% Base de la recursión
-oracion_sujeto_omitido_resto(eng, Suj, [o(Suj, GV)]) -->
-    g_verbal(eng, GV).
+% Descompone un sujeto compuesto en una lista de sujetos individuales
+sujetos_de_compuesto(g_nom_prop(NP1, NP2), [g_nom_prop(NP1), g_nom_prop(NP2)]) :- !.
+sujetos_de_compuesto(Sujeto, [Sujeto]).
 
 
+% Genera lista de oraciones con cada sujeto + cada GV
+generar_oraciones([], _, []).
+generar_oraciones([S | Sujetos], GVs, Resultado) :-
+    findall(o(S, GV), member(GV, GVs), OracionesS),
+    generar_oraciones(Sujetos, GVs, Resto),
+    append(OracionesS, Resto, Resultado).
 
 
 % CONJUNCIONES
@@ -111,16 +124,17 @@ g_adjetival(eng, gadj(ADJ)) --> adjetivo(eng, ADJ).
 g_adverbial(eng, gadv(ADV)) --> adverbio(eng, ADV).
 g_preposicional(eng, gp(PREP)) --> preposicion(eng, PREP).
 
-% Nombre propio simple
-g_nombre_propio(eng, g_nom_prop(NP)) -->
-    nombre_propio(eng, NP).
 
-% Nombre propio compuesto con conjunción
-g_nombre_propio(eng, g_nom_prop(NP1, NP2)) -->
-    nombre_propio(eng, NP1),
+
+g_nombre_propio(eng, g_nom_prop([NP | Resto])) -->
+    nombre_propio(eng, NP),
+    nombre_propios_extra(eng, Resto).
+
+nombre_propios_extra(eng, []) --> [].
+nombre_propios_extra(eng, [NP | Resto]) -->
     g_conjuncion(eng, _),
-    nombre_propio(eng, NP2).
-
+    nombre_propio(eng, NP),
+    nombre_propios_extra(eng, Resto).
 
 
 % DETERMINANTES
@@ -156,6 +170,8 @@ n(neighbour).
 
 % NOMBRES PROPIOS
 nombre_propio(eng, n_p(X)) --> [X], {n_p(X)}.
+//MUY IMPORTANTE, SI SE USAN LOS NOMBRES EN MAYUSCULAS 
+PONERLOS ENTRE COMILLASEN LA TERMINAL//
 n_p(JOSE).
 n_p(MARY).
 n_p(HECTOR).
