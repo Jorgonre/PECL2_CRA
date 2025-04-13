@@ -1,11 +1,9 @@
-% CASO 2: Frase con sujeto omitido internamente (ya maneja sus propias conjunciones)
-oracion(eng, Os) -->
-    oracion_sujeto_omitido(eng, Os).
-
 oracion(eng, [O | Os]) -->
-    (oracion_simple(eng, O)),
+    (oracion_sujeto_omitido(eng, Os))
+    ;
+    ((oracion_simple(eng, O)),
     g_conjuncion(eng, _),
-    oracion(eng, Os).
+    oracion(eng, Os)).
 
 
 
