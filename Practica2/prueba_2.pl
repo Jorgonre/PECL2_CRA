@@ -126,15 +126,16 @@ g_preposicional(eng, gp(PREP)) --> preposicion(eng, PREP).
 
 
 
-g_nombre_propio(eng, g_nom_prop([NP | Resto])) -->
-    nombre_propio(eng, NP),
-    nombre_propios_extra(eng, Resto).
 
-nombre_propios_extra(eng, []) --> [].
-nombre_propios_extra(eng, [NP | Resto]) -->
+% Nombre propio simple
+g_nombre_propio(eng, g_nom_prop(NP)) -->
+    nombre_propio(eng, NP).
+
+% Nombre propio compuesto con conjunción
+g_nombre_propio(eng, g_nom_prop(NP1, NP2)) -->
+    nombre_propio(eng, NP1),
     g_conjuncion(eng, _),
-    nombre_propio(eng, NP),
-    nombre_propios_extra(eng, Resto).
+    nombre_propio(eng, NP2).
 
 
 % DETERMINANTES
