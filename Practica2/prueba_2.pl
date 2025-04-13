@@ -123,7 +123,7 @@ g_verbal(eng, gv(V)) --> verbo(eng, V).
 g_adjetival(eng, gadj(ADJ)) --> adjetivo(eng, ADJ).
 g_adverbial(eng, gadv(ADV)) --> adverbio(eng, ADV).
 g_preposicional(eng, gp(PREP)) --> preposicion(eng, PREP).
-
+ 
 
 
 
