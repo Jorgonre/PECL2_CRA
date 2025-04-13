@@ -107,7 +107,12 @@ g_verbal(eng, gv(V, GN, V2)) -->
 g_verbal(eng, gv(V, ADJ, N)) -->
         verbo(eng, V),
         g_adjetival(eng, ADJ),
-        g_nominal(eng, N).
+        g_nominal(eng, OBJ).
+
+g_verbal(eng, gv(V, ADV, OBJ)) -->
+        verbo(eng, V),
+        g_adverbial(eng, ADV),
+        (g_nominal(eng, OBJ);g_adjetival(eng, OBJ)).
 
 g_verbal(eng, gv(V, N, ADJ)) -->
         verbo(eng, V),
@@ -162,6 +167,12 @@ g_preposicional(eng, gp(PREP)) --> preposicion(eng, PREP).
 % Nombre propio simple
 g_nombre_propio(eng, g_nom_prop(NP)) -->
     nombre_propio(eng, NP).
+
+/*
+DE momento se deja para solo dos nombres pues no sucede de necesitarse 3 o más pero podría ser bueno añadir como mejora permitir más nombres. 
+CHAT lo hace simple el cambio pero habría que cambiar tmb la función de sujeto omitido y hasta que no funcione todo no la quiero tocar
+*/
+
 
 % Nombre propio compuesto con conjunción
 g_nombre_propio(eng, g_nom_prop(NP1, NP2)) -->
@@ -276,6 +287,7 @@ adverbio(eng, adv(Y)) --> [Y], {adv(X,Y)}, !.
 adverbio(eng, adv(X)) --> [X], {adv(X)}.
 adv(little).
 adv(quite).
+adv(very).
 adv(only).
 adv(quite, _).
 
