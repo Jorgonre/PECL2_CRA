@@ -31,7 +31,7 @@ bilingual(sara, sara).
 bilingual(claudia, claudia).
 bilingual(daniel, daniel).
 bilingual(beatriz, beatriz).
-bilingual(maria, maria).
+bilingual(maria, mary).
 bilingual(carlos, carlos).
 bilingual(andres, andres).
 bilingual(diego, diego).
@@ -78,38 +78,37 @@ bilingual(al, '').
 bilingual(los, the).
 bilingual(las, the).
 
-/* PRONOMBRES PERSONALES (INGLÉS -> ESPAÑOL) */
-bilingual(i, yo).
-bilingual(you, tu).
-bilingual(he, el).
-bilingual(she, ella).
-bilingual(it, eso).
-bilingual(we, nosotros).
-bilingual(they, ellos).
+/* PRONOMBRES PERSONALES (ESPAÑOL -> INGLÉS) */
+bilingual(yo, i).
+bilingual(tu, you).
+bilingual(el, he).
+bilingual(ella, she).
+bilingual(eso, it).
+bilingual(nosotros, we).
+bilingual(ellos, they).
 
 /* PRONOMBRES POSESIVOS */
-bilingual(my, mi).
-bilingual(your, tuyo).
-bilingual(his, su).
-bilingual(her, su).
-bilingual(its, su).
-bilingual(our, nuestro).
-bilingual(their, su).
+bilingual(mi, my).
+bilingual(tuyo, your).
+bilingual(su, his).
+bilingual(su, her). 
+bilingual(su, its). 
+bilingual(nuestro, our).
+bilingual(sus, their).
 
 /* PRONOMBRES REFLEXIVOS Y OBJETO */
 bilingual(me, me).
-bilingual(you, te).
-bilingual(him, lo).
-bilingual(her, la).
-bilingual(us, nos).
-bilingual(them, los).
+bilingual(te, you).
+bilingual(lo, him).
+bilingual(la, her).
+bilingual(nos, us).
+bilingual(los, them).
 
 /* PRONOMBRES RELATIVOS */
-bilingual(that, que).
-bilingual(who, que).
-bilingual(which, que).
-bilingual(whom, quien).
-bilingual(whose, cuyo).
+bilingual(que, that).
+bilingual(quien, who).
+bilingual(cuyo, whose).
+bilingual(cual, which). 
 
 /* POSESIVOS (ESPAÑOL -> INGLÉS) */
 bilingual(mi, my).
@@ -126,6 +125,7 @@ bilingual(vuestro, your).
 bilingual(lo, it).
 bilingual(la, the).
 bilingual(le, it).
+
 
 /* Verbos (formas básicas) */
 bilingual(gano, win).
@@ -154,7 +154,7 @@ bilingual(participado, participated).
 bilingual(terminar, finish).
 bilingual(logrado, achieved).
 
-/* Adjetivos y adverbios */
+/* Sustantivos y términos deportivos */
 bilingual(futbol, football).
 bilingual(baloncesto, basketball).
 bilingual(gran, great).
@@ -166,6 +166,7 @@ bilingual(sincronizada, synchronised).
 bilingual(experto, expert).
 bilingual(marciales, 'martial arts').
 bilingual(varios, several).
+bilingual(torneo, tournament).
 bilingual(torneos, tournaments).
 bilingual(maratones, marathons).
 bilingual(dias, days).
@@ -193,8 +194,6 @@ bilingual(negro, black).
 bilingual(destreza, dexterity).
 bilingual(snowboard, snowboarding).
 bilingual(cinturon, belt).
-
-/* Sustantivos y términos deportivos */
 bilingual(seleccion, team).
 bilingual(competidor, competitor).
 bilingual(competicion, competition).
@@ -228,8 +227,6 @@ bilingual(artistica, artistic).
 bilingual(parkour, parkour).
 bilingual(ciudad, city).
 bilingual(tiro, shooting).
-
-/* Nuevas palabras de deporte */
 bilingual(voleibol, volleyball).
 bilingual(rugby, rugby).
 bilingual(boxeo, boxing).
@@ -246,8 +243,56 @@ bilingual(motocross, motocross).
 bilingual('patinaje de velocidad', 'speed skating').
 bilingual(taekwondo, taekwondo).
 bilingual(karate, karate).
+bilingual(moreno, 'dark-skinned').
+bilingual(moreno, darkskinned).
+bilingual(estudiando, studying).
+bilingual(filosofia, philosophy).
+bilingual(derecho, law).
+bilingual(recoge, clears).
+bilingual(periodico, newspaper).
+bilingual(cafe, coffee).
+bilingual(zumo, juice).
+bilingual(salta, skips).
+bilingual(escala, climbs).
+bilingual(escalada, climbing).
+bilingual(pared, wall).
+bilingual(tardes, afternoons).
+bilingual(solo, only).
+bilingual(manzanas, apples).
+bilingual(rojas, red).
+bilingual(procesador_de_textos, word_processor).
+bilingual(potente, powerful).
+bilingual(herramienta, tool).
+bilingual(utilizado, used).
+bilingual(escribir, write).
+bilingual(documentos, documents).
+bilingual(raton, mouse).
+bilingual(gato, cat).
+bilingual(atrapado, caught).
+bilingual(gris, grey).
+bilingual(hombre, man).
+bilingual(vimos, saw).
+bilingual(ayer, yesterday).
+bilingual(vecino, neighbour).
+bilingual(alto, tall).
+bilingual(novela,novel).
 
-/* Verbos conjugados ampliados (GANAR, JUGAR, CORRER, ENTRENAR, PRACTICAR, COMPETIR, etc.) */
+/* Conectores */
+bilingual(mientras, while).
+bilingual(y, and).
+bilingual(con, with).
+bilingual(en, in).
+bilingual(para, for).
+bilingual(juntos, together).
+bilingual(quien, who).
+bilingual(que, who).
+bilingual(muy, very).
+bilingual(despues, after).
+bilingual(antes, before).
+bilingual(pero, but).
+bilingual(aunque, although).
+
+/* Verbos conjugados (GANAR, JUGAR, CORRER, ENTRENAR, PRACTICAR, COMPETIR, etc.) */
 bilingual(ganas, win).
 bilingual(gana, wins).
 bilingual(ganamos, win).
@@ -357,222 +402,75 @@ bilingual(lograron, achieved).
 bilingual(lograre, will_achieve).
 bilingual(lograria, would_achieve).
 
-/* Conectores */
-bilingual(mientras, while).
-bilingual(y, and).
-bilingual(con, with).
-bilingual(en, in).
-bilingual(para, for).
-bilingual(juntos, together).
-bilingual(quien, who).
-bilingual(que, who).
-bilingual(muy, very).
+/* Conjugaciones de "beber" → "drink" */
+bilingual(bebo, drink).
+bilingual(bebes, drink).
+bilingual(bebe, drinks).
+bilingual(bebemos, drink).
+bilingual(beben, drink).
+bilingual(bebia, drank).
+bilingual(bebias, drank).
+bilingual(bebiamos, drank).
+bilingual(bebian, drank).
+bilingual(bebi, drank).
+bilingual(bebiste, drank).
+bilingual(bebimos, drank).
+bilingual(bebieron, drank).
+bilingual(bebere, will_drink).
+bilingual(beberia, would_drink).
 
+/* Conjugaciones de "leer" → "read" */
+bilingual(leo, read).
+bilingual(lees, read).
+bilingual(lee, reads).
+bilingual(leemos, read).
+bilingual(leemos, read).
+bilingual(leian, read).
+bilingual(leia, read).
+bilingual(leias, read).
+bilingual(leiamos, read).
+bilingual(leyeron, read).
+bilingual(lei, read).
+bilingual(leiste, read).
+bilingual(leimos, read).
+bilingual(leere, will_read).
+bilingual(leeria, would_read).
 
-/* Frases generales y descripciones */
-bilingual(dark-skinned, 'dark-skinned').   % se traduce como "moreno" (preferiblemente usar "moreno")
-bilingual(studying, studies).               % para "is studying", se traducirá palabra a palabra
-bilingual(philosophy, filosofia).
-bilingual(law, derecho).
-bilingual(clears, recoge).  
-bilingual(newspaper, periodico).
-bilingual(coffee, cafe).
-bilingual(juice, zumo).
-bilingual(skips, salta).
-bilingual(climbs, escala).
-bilingual(climbing, escalada).
-bilingual(wall, pared).
-bilingual(afternoons, tardes).
-bilingual(only, solo).  
-bilingual(apples, manzanas).
-bilingual(red, rojas).
-bilingual(word_processor, procesador_de_textos).
-bilingual(powerful, potente).
-bilingual(tool, herramienta).
-bilingual(used, utilizado).
-bilingual(write, escribir).
-bilingual(documents, documentos).
-bilingual(mouse, raton).
-bilingual(cat, gato).
-bilingual(caught, atrapado).
-bilingual(grey, gris).
-bilingual(man, hombre).
-bilingual(saw, vimos).
-bilingual(yesterday, ayer).
-bilingual(neighbour, vecino).
+/* Conjugaciones de "comer" → "eat" */
+bilingual(como, eat).
+bilingual(comes, eat).
+bilingual(come, eats).
+bilingual(comemos, eat).
+bilingual(comen, eat).
+bilingual(comia, ate).
+bilingual(comias, ate).
+bilingual(comiamos, ate).
+bilingual(comian, ate).
+bilingual(comi, ate).
+bilingual(comiste, ate).
+bilingual(comimos, ate).
+bilingual(comieron, ate).
+bilingual(comere, will_eat).
+bilingual(comeria, would_eat).
 
-/* Palabras extra para deportes (y frases deportivas) */
-bilingual(studies, estudia).
-bilingual(drinks, bebe).
-bilingual(reads, lee).
-bilingual(sings, canta).
-bilingual(jumps, salta).
-bilingual(juice, zumo).  % ya agregado
-bilingual(chips, 'patatas fritas').
-bilingual(beer, cerveza).
-bilingual(prefers, prefiere).
-bilingual(clears, recoge).  % ya agregado
-bilingual(cheers, anima).     % opcional
-bilingual(consiguido, obtenido).
-bilingual(juntas, together).   % para "juntas"
-bilingual(couple, pareja).
-bilingual(dance, baile).
-bilingual(escalada, climbing).
-bilingual(montanas, mountains).
-bilingual(impresionantes, impressive).
-bilingual(nombrada, named).
-bilingual(juvenil, junior).
-bilingual(personal, personal).
-bilingual(saw, vimos).         % ya agregado
-bilingual(caught, atrapado).   % ya agregado
+/* Conjugaciones de "preferir" → "prefer" */
+bilingual(prefiero, prefer).
+bilingual(prefieres, prefer).
+bilingual(prefiere, prefers).
+bilingual(preferimos, prefer).
+bilingual(prefieren, prefer).
+bilingual(preferia, preferred).
+bilingual(preferias, preferred).
+bilingual(preferiamos, preferred).
+bilingual(preferian, preferred).
+bilingual(prefiriendo, preferring).
+bilingual(preferi, preferred).
+bilingual(preferiste, preferred).
+bilingual(preferimos, preferred).
+bilingual(prefirieron, preferred).
+bilingual(preferire, will_prefer).
+bilingual(preferiria, would_prefer).
 
-/* Para deportes y competencias */
-bilingual(coach, entrenador).
-bilingual(competitor, competidor).
-
-/* Palabras de transcripción para inglés (frases deportivas) */
-bilingual(has, has).      % se traduce igual, pero para EN→ES se puede agregar inverso
-bilingual(plays, plays).  % idem (preferiblemente, para EN->ES, "plays" debe traducirse a "juega")
-bilingual(drinks, drinks).% idem
-bilingual(eats, eats).    % idem
-
-/* Extras de inglés para deporte (para que en EN->ES se realice la traducción): */
-bilingual(football, futbol).
-bilingual(basketball, baloncesto).
-bilingual(goalkeepers, porteros).
-bilingual(rugby, rugby).
-bilingual(boxing, boxeo).
-bilingual(fencing, esgrima).
-bilingual(motorcycling, motociclismo).
-bilingual('auto racing', automovilismo).
-bilingual(skating, patinaje).
-bilingual(softball, softbol).
-bilingual(baseball, beisbol).
-bilingual('american football', 'futbol americano').
-bilingual(golf, golf).
-bilingual(bowling, bowling).
-bilingual(motocross, motocross).
-bilingual('speed skating', 'patinaje de velocidad').
-bilingual(taekwondo, taekwondo).
-bilingual(karate, karate).
-
-/* Extras en inglés para frases generales */
-bilingual(studying, studies).
-bilingual(clears, clears).      % ya traducido en ES->EN como "recoge"
-bilingual(climbs, climbs).       % para EN->ES, "climbs" se traducirá a "escala"
-bilingual(contains, contiene).   % opcional
-bilingual(processor, procesador).
-bilingual(powerful, powerful).   % para luego EN->ES, "powerful" se puede definir como "potente"
-bilingual(used, used).
-bilingual(write, write).
-bilingual(documents, documents).
-
-/* Palabras complementarias para EN -> ES */
-bilingual(is, es).
-bilingual(are, son).
-bilingual(studying, estudia).    % inglés "studying" -> español "estudia"
-bilingual(drinks, bebe).
-bilingual(reads, lee).
-bilingual(sings, canta).
-bilingual(jumps, salta).
-bilingual(plays, juega).
-bilingual(competes, compiten).
-bilingual(trains, entrena).
-bilingual(wins, ganado).        % se usa para has won → ha ganado
-bilingual(broken, batido).       % for "has broken" → ha batido
-bilingual(clears, recoge).
-bilingual(newspaper, periodico).
-bilingual(juice, zumo).
-bilingual(skips, salta).
-bilingual(climbs, escala).
-bilingual(climbing, escalada).
-bilingual(wall, pared).
-bilingual(afternoons, tardes).
-bilingual(apples, manzanas).
-bilingual(red, rojas).
-bilingual(word_processor, procesador_de_textos).
-bilingual(powerful, potente).
-bilingual(tool, herramienta).
-bilingual(used, utilizado).
-bilingual(write, escribir).
-bilingual(documents, documentos).
-bilingual(mouse, raton).
-bilingual(cat, gato).
-bilingual(caught, atrapado).
-bilingual(grey, gris).
-bilingual(man, hombre).
-bilingual(saw, vimos).
-bilingual(yesterday, ayer).
-bilingual(neighbour, vecino).
-
-bilingual(coffee, cafe).
-bilingual(philosophy, filosofia).
-bilingual(law, derecho).
-
-/* Extras deportivos en inglés -> español */
-bilingual(football, futbol).
-bilingual(basketball, baloncesto).
-bilingual(goalkeepers, porteros).
-bilingual(swimming, natacion).
-bilingual(tennis, tenis).
-bilingual('paddle tennis', 'padel').
-bilingual(gymnastics, gimnasia).
-bilingual(rhythmic, ritmica).
-bilingual(handball, balonmano).
-bilingual(triathlon, triatlon).
-bilingual(athletics, atletismo).
-bilingual(weightlifting, levantamiento).
-bilingual(weights, pesas).
-bilingual(kayaking, kayak).
-bilingual(waters, aguas).
-bilingual(rapid, rapidas).
-bilingual(freestyle, estilo).
-bilingual('ping-pong', 'ping-pong').
-bilingual(skiing, esqui).
-bilingual(title, titulo).
-bilingual(championship, campeonado).
-bilingual(badminton, badminton).
-bilingual(wrestling, lucha).
-bilingual(relays, relevos).
-bilingual(judo, judo).
-bilingual(belt, cinturon).
-bilingual(volleyball, voleibol).
-bilingual(rugby, rugby).
-bilingual(boxing, boxeo).
-bilingual(fencing, esgrima).
-bilingual(motorcycling, motociclismo).
-bilingual('auto racing', automovilismo).
-bilingual(skating, patinaje).
-bilingual(softball, softbol).
-bilingual(baseball, beisbol).
-bilingual('american football', 'futbol americano').
-bilingual(golf, golf).
-bilingual(bowling, bowling).
-bilingual(motocross, motocross).
-bilingual('speed skating', 'patinaje de velocidad').
-bilingual(taekwondo, taekwondo).
-bilingual(karate, karate).
-
-bilingual(juntas, juntas).
-bilingual(couple, pareja).
-bilingual(dance, baile).
-
-bilingual(climbing, escalada).
-bilingual(mountains, montanas).
-bilingual(impressive, impresionantes).
-bilingual(named, nombrada).
-bilingual(junior, juvenil).
-
-bilingual(pareja, pareja).
-bilingual(parkour, parkour).
-
-bilingual(playa, playa).
-
-bilingual(first, primer).
-bilingual(podium, podio).
-
-bilingual(daily, diariamente).
-bilingual(pertiga, pertiga).
 
 %----------------------------------------------------------
 %       TRADUCCIÓN DE FRASES: ES->EN  /  EN->ES
