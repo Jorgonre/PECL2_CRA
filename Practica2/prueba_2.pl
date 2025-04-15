@@ -9,6 +9,10 @@ oracion(eng, [O | Os]) -->
     ;
     (oracion_simple(eng, O))
     ;
+    (oracion_sujeto_omitido(eng, O),
+    (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
+    oracion(eng, Os))
+    ;
     ((oracion_simple(eng, O)),
     (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
     oracion(eng, Os))
@@ -241,6 +245,20 @@ g_nombre_propio(eng, g_nom_prop(NP1, NP2)) -->
     nombre_propio(eng, NP1),
     g_conjuncion(eng, _),
     nombre_propio(eng, NP2).
+
+    
+    g_nombre_propio(eng, g_nom_prop(NP1, NP2, NPs)) -->
+        nombre_propio(eng, NP1),
+        g_conjuncion(eng, _),
+        nombre_propio(eng, NP2),
+        g_nombre_propio_resto(eng, NPs).
+
+    % Recolecta los nombres propios adicionales recursivamente
+    g_nombre_propio_resto(eng, [NP | NPs]) -->
+        g_conjuncion(eng, _),
+        nombre_propio(eng, NP),
+        g_nombre_propio_resto(eng, NPs).
+    g_nombre_propio_resto(eng, []) --> [].
 
 
 % DETERMINANTES
