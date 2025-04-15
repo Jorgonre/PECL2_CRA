@@ -1,17 +1,21 @@
+
+
+
+
 oracion(eng, [O | Os]) -->
     (oracion_con_subordinada(eng, O))
     ;
     (oracion_sujeto_omitido(eng, O))
     ;
+    (oracion_simple(eng, O))
+    ;
     ((oracion_simple(eng, O)),
     (g_conjuncion(eng, _); g_relativos(eng, rel(_))),
-    oracion(eng, Os));
+    oracion(eng, Os))
+    ;
     oracion_con_subordinada_implicita(eng, O).
 
 
-
-oracion(eng, [O]) -->
-    oracion_simple(eng, O).
 
 oracion_simple(eng, o(Suj, GV)) -->
     (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
@@ -37,6 +41,10 @@ oracion_sujeto_omitido(eng, OracionesTotales) -->
         { generar_oraciones(Sujetos, GVsIniciales, OracionesTotales) }
     ).
 
+
+
+
+
 % Recolecta todos los GV restantes recursivamente
 oracion_sujeto_omitido_resto_verbs_collect(eng, [GV | Resto]) -->
     g_verbal(eng, GV),
@@ -52,7 +60,25 @@ oracion_sujeto_omitido_resto_verbs_collect(eng, [GV | Resto]) -->
 oracion_con_subordinada(eng, [o(Suj, GVSub), o(Suj, GVMain)]) -->
     (g_nombre_propio(eng, Suj); g_nominal(eng, Suj)),
     ([','];coma),
-    g_relativos(eng, rel(_)), % e.g. who, which, that
+    g_relativos(eng, rel(_)), % e.g. who
+    g_verbal(eng, GVSub),
+    ([',']; coma),
+    g_verbal(eng, GVMain).
+
+
+oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
+    (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
+    g_relativos(eng, rel(_)), 
+    (g_nombre_propio(eng, SujSub); g_nominal(eng, SujSub)),
+    g_verbal(eng, GVSub),
+    g_verbal(eng, GVMain).
+
+
+oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
+    (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
+    ([',']; coma),
+    g_relativos(eng, rel(_)), 
+    (g_nombre_propio(eng, SujSub); g_nominal(eng, SujSub)),
     g_verbal(eng, GVSub),
     ([',']; coma),
     g_verbal(eng, GVMain).
@@ -63,34 +89,12 @@ oracion_con_subordinada(eng, [o(Suj, GVSub), o(Suj, GVMain)]) -->
     g_verbal(eng, GVSub),
     g_verbal(eng, GVMain).
 
-oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
-    (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
-    ([',']; coma),
-    g_relativos(eng, rel(_)), 
-    (g_nombre_propio(eng, SujSub); g_nominal(eng, SujSub)),
-    g_verbal(eng, GVSub),
-    ([',']; coma),
-    g_verbal(eng, GVMain).
-
-oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
-    (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
-    g_relativos(eng, rel(_)), 
-    (g_nombre_propio(eng, SujSub); g_nominal(eng, SujSub)),
-    g_verbal(eng, GVSub),
-    g_verbal(eng, GVMain).
-
-%
-
 
 oracion_con_subordinada_implicita(eng, [o(SujMain, GVMain), o(SujRel, GVSub)]) -->
     (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
     (g_relativos(eng, rel(_)); []),  % Permite que se omita el relativo
     oracion_simple(eng, o(SujRel, GVSub)),
     g_verbal(eng, GVMain).
-
-
-
-    
 
 % Descompone un sujeto compuesto en una lista de sujetos individuales
 sujetos_de_compuesto(g_nom_prop(NP1, NP2), [g_nom_prop(NP1), g_nom_prop(NP2)]) :- !.
@@ -130,16 +134,14 @@ g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
 
 
 
-
 g_verbal(eng, gv(V, OBJ))-->
     verbo(eng, V),
     (g_nominal(eng, OBJ); g_adjetival(eng, OBJ)).
 
-g_verbal(eng, gv(V, ADV))-->
-    verbo(eng, V),
-    g_adverbial(eng, ADV).
-
-
+g_verbal(eng, gv(V1, V2)) --> 
+    verbo(eng, V1), 
+    g_conjuncion(eng, _), 
+    verbo(eng, V2).
 
 g_verbal(eng, gv(V, GN, V2)) -->
         verbo(eng, V),
@@ -209,6 +211,10 @@ g_verbal(eng, gv(V1, V2, V3)) -->
     g_conjuncion(eng, _), 
     verbo(eng, V3).
 
+g_verbal(eng, gv(V, ADV))-->
+    verbo(eng, V),
+    g_adverbial(eng, ADV).
+
 % fallback individual
 g_verbal(eng, gv(V)) --> verbo(eng, V).
 
@@ -240,7 +246,6 @@ g_nombre_propio(eng, g_nom_prop(NP1, NP2)) -->
 % DETERMINANTES
 determinante(eng, det(X)) --> [X], {det(X)}.
 det(the).
-det(The).
 det(a).
 det(my).
 
@@ -354,8 +359,6 @@ adv(quite).
 adv(very).
 adv(only).
 adv(yesterday).
-
-
 % PREPOSICIONES
 preposicion(eng, prep(X)) --> [X], {prep(X)}.
 prep(at).
