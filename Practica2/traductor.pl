@@ -1,14 +1,100 @@
-:- module(traductor, [
-    traducir_frase_es_en/2,
-    traducir_frase_en_es/2
-]).
+:- module(traductor,
+          [ load_verb_db/1,
+            traducir_frase_es_en/2,
+            traducir_frase_en_es/2
+          ]).
 
-/* 
-  IMPORTA el preprocesador 
-  (Debes tener "preprocesar.pl" con los predicados:
-     preprocesar_es/2 y preprocesar_en/2
-*/
-:- use_module(preprocesar).  
+% ----------------------------------------------------------
+% DEPENDENCIAS
+% ----------------------------------------------------------
+:- use_module(library(csv)).          % csv_read_file/3
+:- use_module(preprocesar).           % preprocesar_es/2, preprocesar_en/2
+:- use_module(flexion).               % pluralize_en/2, pluralize/2, singularize_en/2
+
+% ----------------------------------------------------------
+% PREDICADOS DINÁMICOS
+% ----------------------------------------------------------
+:- dynamic verb_db/17.
+:- dynamic bilingual/2.
+:- dynamic bilingual_conj/5.
+
+% ----------------------------------------------------------
+% AUXILIAR: extrae la raíz inglesa limpia
+% ----------------------------------------------------------
+root_eng(Raw, Root) :-
+    % quitar "to " inicial si existe
+    ( sub_atom(Raw, 0, 3, _, "to ") -> sub_atom(Raw, 3, _, 0, Step1) ; Step1 = Raw ),
+    % cortar tras coma o punto y coma
+    ( split_string(Step1, ",;", ",;", [Seg|_]) -> Step2 = Seg ; Step2 = Step1 ),
+    % tomar solo la primera palabra antes del espacio
+    ( split_string(Step2, " ", " ", [W|_]) -> Base = W ; Base = Step2 ),
+    normalize_space(atom(Root), Base).
+
+% ----------------------------------------------------------
+% CARGA CSV E INYECCIÓN DE FORMAS
+% ----------------------------------------------------------
+load_verb_db(File) :-
+    csv_read_file(File, Rows,
+        [ separator(59), functor(verb_db), arity(17), skip_header(true) ]),
+    maplist(assertz, Rows),
+    forall(
+        verb_db(InfEs, InfEnRaw, _MoodEs, MoodEn, _TenseEs, TenseEn,
+                _VerbEngRaw, F1s,F2s,F3s, F1p,F2p,F3p,
+                GerEs, GerEn, PPEs, PPEng),
+        (
+          root_eng(InfEnRaw, Root),
+          % infinitivo, gerundio, participio
+          assertz(bilingual(InfEs, Root)),
+          assertz(bilingual(GerEs, GerEn)),
+          assertz(bilingual(PPEs, PPEng)),
+          % formas conjugadas españolas -> datos de conjugación
+          assertz(bilingual_conj(F1s, MoodEn, TenseEn, "1s", Root)),
+          assertz(bilingual_conj(F2s, MoodEn, TenseEn, "2s", Root)),
+          assertz(bilingual_conj(F3s, MoodEn, TenseEn, "3s", Root)),
+          assertz(bilingual_conj(F1p, MoodEn, TenseEn, "1p", Root)),
+          assertz(bilingual_conj(F2p, MoodEn, TenseEn, "2p", Root)),
+          assertz(bilingual_conj(F3p, MoodEn, TenseEn, "3p", Root))
+        )
+    ).
+
+% ----------------------------------------------------------
+% CONJUGAR VERBO EN INGLÉS
+% ----------------------------------------------------------
+conjugar_en(Inf, 'Indicative', 'Present', '3s', Form) :-
+    pluralize_en(Inf, Form).
+conjugar_en(Inf, _Mood, _Tense, _Pers, Inf).
+
+% ----------------------------------------------------------
+% TRADUCIR ES -> EN
+% ----------------------------------------------------------
+traducir_frase_es_en(FraseEs, FraseEn) :-
+    preprocesar_es(FraseEs, ToksEs),
+    maplist(traducir_token_es_en, ToksEs, ToksEn),
+    atomic_list_concat(ToksEn, ' ', FraseEn).
+
+traducir_token_es_en(Es, En) :-
+    ( bilingual_conj(Es, Mood, Tense, Pers, Root)
+    -> conjugar_en(Root, Mood, Tense, Pers, En)
+    ; bilingual(Es, Base)
+    -> En = Base
+    ; En = Es
+    ).
+
+% ----------------------------------------------------------
+% TRADUCIR EN -> ES
+% ----------------------------------------------------------
+traducir_frase_en_es(FraseEn, FraseEs) :-
+    preprocesar_en(FraseEn, ToksEn),
+    maplist(traducir_token_en_es, ToksEn, ToksEs),
+    atomic_list_concat(ToksEs, ' ', FraseEs).
+
+traducir_token_en_es(En, Es) :-
+    ( bilingual(Es, En)
+    -> true
+    ; singularize_en(En, Base), Base \== En, bilingual(Es, Base)
+    ; Es = En
+    ).
+
 
 /**************************************
  * BILINGUAL DICTIONARY (ES -> EN)
@@ -470,42 +556,3 @@ bilingual(preferimos, preferred).
 bilingual(prefirieron, preferred).
 bilingual(preferire, will_prefer).
 bilingual(preferiria, would_prefer).
-
-
-%----------------------------------------------------------
-%       TRADUCCIÓN DE FRASES: ES->EN  /  EN->ES
-%----------------------------------------------------------
-
-%% traducir_frase_es_en(+OracionES, -OracionEN)
-%  1) Preprocesa la frase en español
-%  2) Traduce token a token
-%  3) Devuelve string concatenado en inglés
-traducir_frase_es_en(FraseEsp, FraseIng) :-
-    preprocesar_es(FraseEsp, TokensES),
-    traducir_es_en(TokensES, TokensEN),
-    atomic_list_concat(TokensEN, ' ', FraseIng).
-
-traducir_es_en([], []).
-traducir_es_en([Es|ResEs], [En|ResEn]) :-
-    ( bilingual(Es, En) ->
-        true
-    ; En = Es  % si no se encuentra en el diccionario, deja la palabra tal cual
-    ),
-    traducir_es_en(ResEs, ResEn).
-
-%% traducir_frase_en_es(+OracionEN, -OracionES)
-%  1) Preprocesa la frase en inglés
-%  2) Traduce token a token
-%  3) Devuelve string concatenado en español
-traducir_frase_en_es(FraseEng, FraseEsp) :-
-    preprocesar_en(FraseEng, TokensEN),
-    traducir_en_es(TokensEN, TokensES),
-    atomic_list_concat(TokensES, ' ', FraseEsp).
-
-traducir_en_es([], []).
-traducir_en_es([En|ResEn], [Es|ResEs]) :-
-    ( bilingual(Es, En) ->
-        true
-    ; Es = En  % si no se encuentra
-    ),
-    traducir_en_es(ResEn, ResEs).

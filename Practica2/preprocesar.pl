@@ -22,6 +22,7 @@ preprocesar_es(Sentence, Tokens) :-
     split_string(CleanPunct, " ", "", Split),
     exclude(==( ""), Split, NonEmpty),
     maplist(atom_string, Tokens, NonEmpty).
+    
 
 %% Si quieres expandir alguna "contracción" en español, ajusta aquí:
 expand_contractions_es(In, Out) :-
