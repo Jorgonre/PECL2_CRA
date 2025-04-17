@@ -97,10 +97,10 @@ end([H],[],H) :- !,atomic(H). /* one element list */
 end([H|T],[H|Out],End) :- end(T,Out,End).
 
 cross(2,Din,Dout,Chars) :- !, single(Din,Dout,Chars).
-cross(_,Din,Dout,Chars) :- aux_cross(Din,Dout,Chars).
+cross(_,Din,Dout,Chars) :- aux_cross(Din,Dout,Chars). %write('Dint: '), write(Din), nl, write('Dout: '), write(Dout), nl.
 
 ifs([],Dout,Dout) :- !.
-ifs(43,Dout,Dout) :- !,nl,write('Error: blank end in ifs '). %He puesto 43 para que no de error
+ifs(32,Dout,Dout) :- !,nl,write('Error: blank end in ifs ').
 ifs(End,Din,Dout) :- append(Din,[End],Dout).
 
 
@@ -119,7 +119,7 @@ dashes(Num,Din,Dout) :- New is Num - 1,
                         append(Din,[45],Dmid),
                         dashes(New,Dmid,Dout). 
 
-cont(2,Chars,Din,Dout) :- !,dashes(Chars,Din,Dout).
+cont(32,Chars,Din,Dout) :- !,dashes(Chars,Din,Dout).
                         /* if ' ' append char dashes */
                                 
                         
@@ -133,17 +133,31 @@ cont(End,Chars,Din,Dout) :-     New is Chars - 1,
                                 if | append | and char - 1 spaces and +
                                 if anything else, I messed up */
 
-aux_cross(Din, Dout, Chars) :-
-                        end(Din, Dmid1, End),
-                        cont(End, Chars, Dmid1, Dmid2),
-                        end(Dmid2, Mid, Final), % Verifica el carácter final después del primer append
-                        (   Final \= 43, % Si el carácter final no es '+'
-                        Din \= [] % Asegúrate de que no sea el principio de la lista
-                        ->  append(Mid, [45,43,32], Dout) % Añade un '-', un '+' y un espacio
-                        ;   append(Dmid2, [2], Dout) % Solo añade un espacio
-                        ).
+ultimo([X], X) :- !. % Caso base: cuando la lista tiene un solo elemento, ese es el último.
+ultimo([_|T], X) :- ultimo(T, X). % Caso recursivo: ignora la cabeza y sigue con la cola.
 
-choose(32,Din,Dout) :- append(Din,[32],Dout).
+todos_menos_el_ultimo([_], []). % Caso base: si la lista tiene un solo elemento, el resultado es una lista vacía.
+todos_menos_el_ultimo([H|T], [H|R]) :- 
+    todos_menos_el_ultimo(T, R). % Caso recursivo: conserva la cabeza y procesa la cola.
+
+quitar_si_ultimo_43(ListaEntrada, ListaSalida) :-
+    ultimo(ListaEntrada, 43), % Verifica si el último elemento es `43`.
+    todos_menos_el_ultimo(ListaEntrada, ListaSalida), !. % Si es `43`, devuelve la lista sin el último elemento.
+
+quitar_si_ultimo_43(ListaEntrada, ListaEntrada). % Si el último elemento no es `43`, devuelve la lista tal cual.
+
+aux_cross(Din,Dout,Chars) :-    end(Din,Dmid1,End),
+                                %write('Din: '),write(Din),nl,
+                                %write('End: '),write(End),nl,
+                                %write('Chars: '),write(Chars),nl,
+                                cont(End,Chars,Dmid1,Dmid2),
+                        /* since we are in a --- always end with a ' ' */
+                                (End == 32 ->
+                                append(Dmid2,[43,32],Dout)
+                                ;append(Dmid2,[32],Dout)
+                                ).
+
+choose(32,Din,Dout) :- quitar_si_ultimo_43(Din,Din1), append(Din1,[43],Dout).
 choose(End,Din,Dout) :-  ifs(End,Din,Dout).
 
 check(In) :- In>0,!.
