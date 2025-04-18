@@ -3,9 +3,14 @@
     preprocesar_en/2
 ]).
 
+%------------------------------------------------------------------------------%
+% Evitar que Prolog añada comillas al imprimir átomos con caracteres especiales
+%------------------------------------------------------------------------------%
+:- set_prolog_flag(answer_write_options, [quoted(false)]).
+
 /* 
    Preprocesa cadenas ES o EN:
-   - to lowercase
+   - a minúsculas
    - elimina puntuación
    - expande contracciones
    - separa en tokens (átomos)
@@ -22,14 +27,12 @@ preprocesar_es(Sentence, Tokens) :-
     split_string(CleanPunct, " ", "", Split),
     exclude(==( ""), Split, NonEmpty),
     maplist(atom_string, Tokens, NonEmpty).
-    
 
-%% Si quieres expandir alguna "contracción" en español, ajusta aquí:
+%% Expansión de contracciones en español
 expand_contractions_es(In, Out) :-
-    % Un ejemplo minimalista: "del" -> "de el", "al" -> "a el"
     ESContracciones = [
         ("del", "de el"),
-        ("al", "a el")
+        ("al",  "a el")
     ],
     expand_all(ESContracciones, In, Out).
 
@@ -41,9 +44,9 @@ remove_punctuation_es(In, Out) :-
 valid_char_es(C) :-
     char_type(C, alnum)
     ; C = ' '
-    ; C = ''''.  % por si aparece algún apóstrofe
-
-
+    ; C = ''''    % apostrofos
+    ; C = '-' .   % conservamos guiones
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 2) PREPROCESAR EN INGLÉS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,44 +61,44 @@ preprocesar_en(Sentence, Tokens) :-
 
 expand_contractions_en(In, Out) :-
     ENContracciones = [
-      ("isn't", "is not"),
-      ("aren't", "are not"),
-      ("wasn't", "was not"),
-      ("weren't", "were not"),
-      ("don't", "do not"),
-      ("doesn't", "does not"),
-      ("didn't", "did not"),
-      ("can't", "can not"),
-      ("couldn't", "could not"),
-      ("shouldn't", "should not"),
-      ("wouldn't", "would not"),
-      ("won't", "will not"),
-      ("hasn't", "has not"),
-      ("haven't", "have not"),
-      ("hadn't", "had not"),
-      ("mustn't", "must not"),
-      ("i'm", "i am"),
-      ("you're", "you are"),
-      ("he's", "he is"),
-      ("she's", "she is"),
-      ("it's", "it is"),
-      ("we're", "we are"),
-      ("they're", "they are"),
-      ("i've", "i have"),
-      ("you've", "you have"),
-      ("they've", "they have"),
-      ("i'll", "i will"),
-      ("you'll", "you will"),
-      ("he'll", "he will"),
-      ("she'll", "she will"),
-      ("they'll", "they will"),
-      ("i'd", "i would"),
-      ("you'd", "you would"),
-      ("he'd", "he would"),
-      ("she'd", "she would"),
-      ("they'd", "they would"),
-      ("that's", "that is"),
-      ("there's", "there is")
+        ("isn't",    "is not"),
+        ("aren't",   "are not"),
+        ("wasn't",   "was not"),
+        ("weren't",  "were not"),
+        ("don't",    "do not"),
+        ("doesn't",  "does not"),
+        ("didn't",   "did not"),
+        ("can't",    "can not"),
+        ("couldn't", "could not"),
+        ("shouldn't","should not"),
+        ("wouldn't", "would not"),
+        ("won't",    "will not"),
+        ("hasn't",   "has not"),
+        ("haven't",  "have not"),
+        ("hadn't",   "had not"),
+        ("mustn't",  "must not"),
+        ("i'm",      "i am"),
+        ("you're",   "you are"),
+        ("he's",     "he is"),
+        ("she's",    "she is"),
+        ("it's",     "it is"),
+        ("we're",    "we are"),
+        ("they're",  "they are"),
+        ("i've",     "i have"),
+        ("you've",   "you have"),
+        ("they've",  "they have"),
+        ("i'll",     "i will"),
+        ("you'll",   "you will"),
+        ("he'll",    "he will"),
+        ("she'll",   "she will"),
+        ("they'll",  "they will"),
+        ("i'd",      "i would"),
+        ("you'd",    "you would"),
+        ("he'd",     "he would"),
+        ("she'd",    "she would"),
+        ("they'd",   "they would"),
+        ("that's",   "that is"),
+        ("there's",  "there is")
     ],
     expand_all(ENContracciones, In, Out).
 
@@ -107,7 +110,8 @@ remove_punctuation_en(In, Out) :-
 valid_char_en(C) :-
     char_type(C, alnum)
     ; C = ' '
-    ; C = ''''.  % permitir apóstrofes para contracciones
+    ; C = ''''  % apóstrofos
+    ; C = '-' . % conservamos guiones
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Auxiliares Comunes
