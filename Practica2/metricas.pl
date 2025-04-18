@@ -1,4 +1,11 @@
 :- use_module(library(csv)).
+:- use_module(library(apply)).
+
+:- use_module(draw).
+              
+:- consult('preprocesar.pl').         % preprocesar_en/2
+:- consult('prueba_2.pl').            % definiciones de fe*/f*
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %FRASES DEL ENUNCIADO TRADUCIDAS%
@@ -94,16 +101,78 @@ analizar_frases_en :-
         )).
         */
 
+exportar_frases_csv(File) :-
+    Sep = 59,                         % código ASCII del punto y coma
+    Options = [separator(Sep)],        % opciones comunes de escritura
+    setup_call_cleanup(
+        open(File, write, Stream, [encoding(utf8)]),
+        (
+            % Cabecera
+            csv_write_stream(Stream, [row(categoria,id,frase)], Options),
+            % Frases del enunciado y de deportes
+            escribir_serie(Stream, fe, 14, enunciado, Options),
+            escribir_serie(Stream, f,  40, deportes,  Options)
+        ),
+        close(Stream)
+    ).
 
-% Predicado para escribir en un archivo CSV
-crear_excel :-
-        setup_call_cleanup(
-            open('archivo.csv', write, Stream), % Abrir el archivo en modo escritura
-            (
-                % Escribir encabezados en el archivo CSV
-                csv_write_stream(Stream, [row('Nombre', 'Edad')], []),
-                % Escribir datos en el archivo CSV
-                csv_write_stream(Stream, [row('Juan', 25)], [])
-            ),
-            close(Stream) % Asegurarse de cerrar el archivo
-        ).
+%% escribir_serie(+Stream,+Prefijo,+Total,+Categoria,+Opts)
+escribir_serie(Stream, Prefijo, Total, Categoria, Opts) :-
+    forall(
+        between(1, Total, N),
+        (
+            format(atom(PredAtom), '~w~d', [Prefijo, N]),
+            Goal =.. [PredAtom, Frase],
+            (   call(Goal)
+            ->  csv_write_stream(Stream, [row(Categoria, N, Frase)], Opts)
+            ;   true
+            )
+        )
+    ).
+
+%%--------------------------------------------------
+%% Extraer sujeto/predicado de un término o/2 o de lista
+%%--------------------------------------------------
+sujeto(o(S, _), S) :- !.
+sujeto([Primero|_], S) :- sujeto(Primero, S), !.
+
+predicado(o(_, P), P) :- !.
+predicado([Primero|_], P) :- predicado(Primero, P), !.
+
+%%--------------------------------------------------
+%% metricas_draw(+ArchivoCSV)
+%%--------------------------------------------------
+metricas_draw(File) :-
+    % Leemos todas las filas, unificamos la primera con el header y quedamos sólo con Rows
+    csv_read_file(File, [rec(categoria,id,frase)|Rows],
+                  [separator(59), functor(rec), arity(3)]),
+    % Imprimimos cabecera de salida
+    format('Cat\tId\tCharsS\tCharsP\tTokS\tTokP~n'),
+    % Recorremos sólo las filas de datos
+    forall(
+      member(rec(Cat,Id,SentAtom), Rows),
+      (
+        atom_string(SentAtom, Sentence),
+        preprocesar_en(Sentence, Tokens),
+        (   oracion(eng, Tree0, Tokens, [])
+        ->  % el DCG puede devolver Tree0 como lista de o(...) o como un único o(...)
+            ( is_list(Tree0) -> Tree0 = [Tree|_] ; Tree = Tree0 ),
+            % extraemos sujeto/predicado
+            sujeto(Tree, SujTree),
+            predicado(Tree, PredTree),
+            % calculamos #caracteres
+            calcular_longitud_frase(SujTree, ChS),
+            calcular_longitud_frase(PredTree, ChP),
+            % calculamos #tokens
+            with_output_to(atom(SujTxt),    imprimir_frase(SujTree)),
+            split_string(SujTxt, " ", "", SL), length(SL, TokS),
+            with_output_to(atom(PredTxt),   imprimir_frase(PredTree)),
+            split_string(PredTxt, " ", "", PL), length(PL, TokP),
+            % imprimimos la línea
+            format('~w\t~w\t~d\t~d\t~d\t~d~n',
+                   [Cat,Id,ChS,ChP,TokS,TokP])
+        ;   % si no parsea, avisamos pero seguimos
+            format('% Warning: no parse for id=~w: "~w"~n', [Id,Sentence])
+        )
+      )
+    ).
