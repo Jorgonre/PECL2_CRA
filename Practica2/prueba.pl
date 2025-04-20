@@ -195,11 +195,24 @@ g_verbal(eng, gv(V, PREP1, N1, PREP2, N2)) -->
         g_preposicional(eng, PREP2),
         g_nominal(eng, N2).
 
+g_verbal(eng, gv(V, PREP, N)) -->
+        verbo(eng, V),
+        g_preposicional(eng, PREP),
+        g_nominal(eng, N).
+
 g_verbal(eng, gv(V1, PREP, V2, N)) -->
         verbo(eng, V1),
         g_preposicional(eng, PREP),
         verbo(eng, V2),
         g_nominal(eng, N).
+
+g_verbal(eng, gv(V, N1,PREP, N2)) -->
+        verbo(eng, V),
+        g_nominal(eng, N1).
+        g_preposicional(eng, PREP),
+        g_nominal(eng, N2).
+
+
 
 g_verbal(eng, gv(V1, PREP1, ADV, ADJ, N1, PREP2, V2, N2)) -->
         verbo(eng, V1),
@@ -283,16 +296,27 @@ determinante(eng, det(X)) --> [X], {det(X)}.
 det(the).
 det(a).
 det(my).
+det(an).
 det(his).
 det(her).
 det(first).
 det(several).
 
 % NOMBRES
+% Caso triple:
+nombre(eng, n(Nombre)) -->
+    [X, Y, Z],
+    { nombre_compuesto(X, Y),
+      nombre_compuesto(Y, Z),
+      atomic_list_concat([X, Y, Z], '_', Nombre) }.
+
+% Caso doble:
 nombre(eng, n(Nombre)) -->
     [X, Y],
     { nombre_compuesto(X, Y),
       atomic_list_concat([X, Y], '_', Nombre) }.
+
+% Caso simple:    
 nombre(eng, n(X)) --> [X], {n(X)}.
 
 
@@ -308,7 +332,6 @@ n(philosophy).
 n(law).
 n(juice).
 n(afternoons).
-n(climbing).
 n(apples).
 n(word).
 n(processor).
@@ -343,7 +366,6 @@ n(captains).
 n(volleyball).
 n(record).
 n(category).
-n(climbing).
 n(mountains).
 n(triathlon).
 n(competition).
@@ -359,7 +381,6 @@ n(weightlifting).
 n(kayaking).
 n(swimming).
 n(tennis).
-n(handball_team).
 n(table_tennis).
 n(long_jump).
 n(weekends).
@@ -378,6 +399,11 @@ n(podium).
 n(technique).
 n(club).
 n(gymnastics).
+n(day).
+n(sports).
+n(jump).
+n(handball).
+n(part).
 
 
 nombre_compuesto(climbing, wall).
@@ -386,6 +412,13 @@ nombre_compuesto(paddle, tennis).
 nombre_compuesto(golden, ball).
 nombre_compuesto(basketball, player).
 nombre_compuesto(football, player).
+nombre_compuesto(sports, dance).
+nombre_compuesto(dance, couple).
+nombre_compuesto(volleyball, team).
+nombre_compuesto(jump, record).
+nombre_compuesto(handball, team).
+nombre_compuesto(triathlon, competition).
+nombre_compuesto(cycling, race).
 
 
 % NOMBRES PROPIOS
@@ -454,8 +487,11 @@ verbo(eng, v(X)) --> [X], {v(X)}.
 verbo(eng, v(is, G)) --> [is, G], { gerundio(G) }.
 verbo(eng, v(was, G)) --> [was, G], { gerundio(G) }.
 verbo(eng, v(are, G)) --> [are, G], { gerundio(G) }.
+verbo(eng, v(practices, G)) --> [practices, G], {gerundio(G) }.
 verbo(eng, v(is, P)) --> [is, P], { pasado(P) }.
 verbo(eng, v(has, P)) --> [has, P], { pasado(P) }.
+verbo(eng, v(has, been ,P)) --> [has, been,P], { pasado(P) }.
+
 
 v(is).
 v(are).
@@ -522,9 +558,14 @@ gerundio(drinking).
 gerundio(singing).
 gerundio(eating).
 gerundio(swimming).
+gerundio(taking).
 
 pasado(used).
 pasado(won).
+pasado(elected).
+pasado(broken).
+pasado(climbed).
+pasado(selected).
 
 
 
@@ -564,6 +605,8 @@ adj(red).
 adj(powerful).
 adj(slow).
 adj(black).
+adj(long).
+adj(next).
 
 % ADVERBIOS
 adverbio(eng, adv(X)) --> [X], {adv(X)}.
