@@ -577,3 +577,59 @@ prep(on_the_podium).
 prep(on_the_beach).
 prep(on_weekends).
 prep(before_school).
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MEJORAS DE DETECTAR COMPLEMENTOS%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Detecta el complemento directo recorriendo todos los hijos del gv
+detectar_complemento_directo(o(_, GV), CD) :-
+    write('Procesando GV: '), writeln(GV), % Depuración
+    buscar_gn_en_termino(GV, CD), !.
+
+% Caso en el que no hay complemento directo
+detectar_complemento_directo(_, none).
+
+% Busca un gn en un término compuesto
+buscar_gn_en_termino(Termino, CD) :-
+    write('Procesando término: '), writeln(Termino), % Depuración
+    functor(Termino, _, Arity), % Obtiene el número de argumentos del término
+    buscar_en_argumentos_CD(1, Arity, Termino, CD).
+
+% Recorre los argumentos de un término compuesto y busca todos los gn
+buscar_en_argumentos_CD(Pos, Arity, Termino, CD) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, gn, _) -> write('Encontrado CD en argumento: '), writeln(Arg), CD = Arg, ! % Busca recursivamente en el argumento
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CD(NextPos, Arity, Termino, CD)).
+
+%Detectar el complemento indirecto recorriendo todos los hijos del gv
+detectar_complemento_indirecto(o(_, GV), CI) :-
+    write('Procesando GV: '), writeln(GV), % Depuración
+    buscar_gn_prep_en_termino(GV, CI), !.
+
+% Caso en el que no hay complemento indirecto
+detectar_complemento_indirecto(_, none).
+
+% Busca un gn en un término compuesto
+buscar_gn_prep_en_termino(Termino, CI) :-
+    write('Procesando término: '), writeln(Termino), % Depuración
+    functor(Termino, _, Arity), % Obtiene el número de argumentos del término
+    buscar_en_argumentos_CI(1, Arity, Termino, CI).
+
+% Recorre los argumentos de un término compuesto y busca todos los gn
+buscar_en_argumentos_CI(Pos, Arity, Termino, CI) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, gp, _) -> PosNew is Pos + 1, arg(PosNew, Termino, Arg1), 
+    ArgF = (Arg, Arg1), % Concatenar el argumento y el complemento
+    write('Encontrado CI en argumento: '), writeln(ArgF), 
+    CI = ArgF, ! % Busca recursivamente en el argumento
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CI(NextPos, Arity, Termino, CI)).
