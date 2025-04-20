@@ -135,8 +135,17 @@ coma --> [coma].
 % GRUPOS SINTÁCTICOS
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
+g_nominal(eng, gn(D, ADJ, N)) --> determinante(eng, D), adjetivo(eng, ADJ),nombre(eng, N).
+g_nominal(eng, gn(ADJ, N)) --> adjetivo(eng, ADJ), nombre(ENG, N).
 
 
+
+g_verbal(eng, gv(V, ADV, PREP, ADJ, N)) -->
+        verbo(eng, V),
+        g_adverbial(eng, ADV),
+        g_preposicional(eng, PREP),
+        g_adjetival(eng, ADJ),
+        g_nominal(eng, N).
 
 g_verbal(eng, gv(V, OBJ))-->
     verbo(eng, V),
@@ -173,12 +182,7 @@ g_verbal(eng, gv(V, ADV, ADJ, N)) -->
         g_adjetival(eng, ADJ),
         g_nominal(eng, N).
 
-g_verbal(eng, gv(V, ADV, PREP, ADJ, N)) -->
-        verbo(eng, V),
-        g_adverbial(eng, ADV),
-        g_preposicional(eng, PREP),
-        g_adjetival(eng, ADJ),
-        g_nominal(eng, N).
+
 
 
 /*ESTA VA A SER MUY ESPECÍFICA, 
@@ -207,6 +211,19 @@ g_verbal(eng, gv(V1, PREP1, ADV, ADJ, N1, PREP2, V2, N2)) -->
         g_verbal(eng, V2),
         g_nominal(eng, N2).
 
+g_verbal(eng, gv(V1,N1, PREP, ADJ, V2)) -->
+        verbo(eng, V1),
+        g_nominal(eng, N1),
+        g_preposicional(eng, PREP),
+        g_adjetival(eng, ADJ),
+        verbo(eng, V2).
+
+
+g_verbal(eng, gv(V, N1, PREP, N2))-->
+    verbo(eng, V),
+    g_nominal(eng, N1),
+    g_preposicional(eng, PREP),
+    g_nominal(eng, N2).
 
 g_verbal(eng, gv(V1, V2, V3)) -->
     verbo(eng, V1), 
@@ -359,10 +376,16 @@ n(belt).
 n(dexterity).
 n(podium).
 n(technique).
+n(club).
+n(gymnastics).
 
 
 nombre_compuesto(climbing, wall).
 nombre_compuesto(word, processor).
+nombre_compuesto(paddle, tennis).
+nombre_compuesto(golden, ball).
+nombre_compuesto(basketball, player).
+nombre_compuesto(football, player).
 
 
 % NOMBRES PROPIOS
@@ -432,8 +455,10 @@ verbo(eng, v(is, G)) --> [is, G], { gerundio(G) }.
 verbo(eng, v(was, G)) --> [was, G], { gerundio(G) }.
 verbo(eng, v(are, G)) --> [are, G], { gerundio(G) }.
 verbo(eng, v(is, P)) --> [is, P], { pasado(P) }.
+verbo(eng, v(has, P)) --> [has, P], { pasado(P) }.
 
 v(is).
+v(are).
 v(is, _).
 v(clears).
 v(drinks).
@@ -474,7 +499,7 @@ v(enjoys).
 v(practises).
 v(participated).
 v(managed).
-v(won).
+v(compete).
 v(clears).
 v(drinks).
 v(reads).
@@ -485,6 +510,7 @@ v(studies).
 v(prepares).
 v(obtained).
 v(improves).
+v(swimming).
 
 
 
@@ -495,8 +521,10 @@ gerundio(climbing).
 gerundio(drinking).
 gerundio(singing).
 gerundio(eating).
+gerundio(swimming).
 
 pasado(used).
+pasado(won).
 
 
 
@@ -530,7 +558,7 @@ adj(gold).
 adj(artistic).
 adj(whitewater).
 adj(rhythmic).
-adj(paddle).
+adj(synchronised).
 adj(delicate).
 adj(red).
 adj(powerful).
@@ -565,7 +593,6 @@ prep(a).
 prep(to).
 prep(for).
 prep(of).
-prep(in).
 prep(on).
 prep(with).
 prep(around).
