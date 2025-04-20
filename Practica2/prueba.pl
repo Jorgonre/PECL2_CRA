@@ -70,12 +70,14 @@ oracion_con_subordinada(eng, [o(Suj, GVSub), o(Suj, GVMain)]) -->
     g_verbal(eng, GVMain).
 
 
-oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
+oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSubAdjusted)]) -->
     (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
     g_relativos(eng, rel(_)), 
     (g_nombre_propio(eng, SujSub); g_nominal(eng, SujSub)),
     g_verbal(eng, GVSub),
+    { GVSubAdjusted = gv(GVSub, SujMain) },
     g_verbal(eng, GVMain).
+
 
 //Esta opción se está usando??//
 
