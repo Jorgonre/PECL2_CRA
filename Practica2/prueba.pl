@@ -578,6 +578,7 @@ v(improves).
 v(swimming).
 v(play).
 v(greeted).
+v(likes).
 
 
 
