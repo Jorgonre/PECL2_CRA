@@ -77,6 +77,7 @@ oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
     g_verbal(eng, GVSub),
     g_verbal(eng, GVMain).
 
+//Esta opción se está usando??//
 
 oracion_con_subordinada(eng, [o(SujMain, GVMain), o(SujSub, GVSub)]) -->
     (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
@@ -146,6 +147,12 @@ g_verbal(eng, gv(V, ADV, PREP, ADJ, N)) -->
         g_preposicional(eng, PREP),
         g_adjetival(eng, ADJ),
         g_nominal(eng, N).
+    
+g_verbal(eng, gv(V, ADV, PREP, N)) -->
+        verbo(eng, V),
+        g_adverbial(eng, ADV),
+        g_preposicional(eng, PREP),
+        g_nominal(eng, N).
 
 g_verbal(eng, gv(V, OBJ))-->
     verbo(eng, V),
@@ -208,10 +215,17 @@ g_verbal(eng, gv(V1, PREP, V2, N)) -->
 
 g_verbal(eng, gv(V, N1,PREP, N2)) -->
         verbo(eng, V),
-        g_nominal(eng, N1).
+        g_nominal(eng, N1),
         g_preposicional(eng, PREP),
         g_nominal(eng, N2).
 
+g_verbal(eng, gv(V, N1,PREP1, N2, PREP2, N3)) -->
+        verbo(eng, V),
+        g_nominal(eng, N1),
+        g_preposicional(eng, PREP1),
+        g_nominal(eng, N2),
+        g_preposicional(eng, PREP2),
+        g_nominal(eng, N3).
 
 
 g_verbal(eng, gv(V1, PREP1, ADV, ADJ, N1, PREP2, V2, N2)) -->
@@ -379,13 +393,10 @@ n(championship).
 n(athletics).
 n(weightlifting).
 n(kayaking).
-n(swimming).
 n(tennis).
 n(table_tennis).
 n(long_jump).
 n(weekends).
-n(skiing).
-n(snowboarding).
 n(title).
 n(parkour).
 n(city).
@@ -404,6 +415,15 @@ n(sports).
 n(jump).
 n(handball).
 n(part).
+n(champion).
+n(beach).
+n(intelligence).
+n(world).
+n(handbag).
+n(chinese).
+n(week).
+n(girl).
+n(exgirlfriend).
 
 
 nombre_compuesto(climbing, wall).
@@ -419,6 +439,12 @@ nombre_compuesto(jump, record).
 nombre_compuesto(handball, team).
 nombre_compuesto(triathlon, competition).
 nombre_compuesto(cycling, race).
+nombre_compuesto(chess, player).
+nombre_compuesto(tennis, championship).
+nombre_compuesto(athletics, competition).
+nombre_compuesto(whitewater, kayaking).
+nombre_compuesto(table, tennis).
+nombre_compuesto(wrestling, championship).
 
 
 % NOMBRES PROPIOS
@@ -488,9 +514,12 @@ verbo(eng, v(is, G)) --> [is, G], { gerundio(G) }.
 verbo(eng, v(was, G)) --> [was, G], { gerundio(G) }.
 verbo(eng, v(are, G)) --> [are, G], { gerundio(G) }.
 verbo(eng, v(practices, G)) --> [practices, G], {gerundio(G) }.
+verbo(eng, v(enjoys, G)) --> [enjoys, G], {gerundio(G) }.
+verbo(eng, v(goes, G)) --> [goes, G], {gerundio(G) }.
 verbo(eng, v(is, P)) --> [is, P], { pasado(P) }.
 verbo(eng, v(has, P)) --> [has, P], { pasado(P) }.
 verbo(eng, v(has, been ,P)) --> [has, been,P], { pasado(P) }.
+verbo(eng, v(was, P)) --> [was, P], { pasado(P) }.
 
 
 v(is).
@@ -547,6 +576,8 @@ v(prepares).
 v(obtained).
 v(improves).
 v(swimming).
+v(play).
+v(greeted).
 
 
 
@@ -559,6 +590,11 @@ gerundio(singing).
 gerundio(eating).
 gerundio(swimming).
 gerundio(taking).
+gerundio(skiing).
+gerundio(snowboarding).
+gerundio(playing).
+gerundio(changing).
+gerundio(reading).
 
 pasado(used).
 pasado(won).
@@ -566,6 +602,10 @@ pasado(elected).
 pasado(broken).
 pasado(climbed).
 pasado(selected).
+pasado(named).
+pasado(beaten).
+pasado(achieved).
+pasado(imported).
 
 
 
@@ -607,6 +647,13 @@ adj(slow).
 adj(black).
 adj(long).
 adj(next).
+adj(junior).
+adj(new).
+adj(artificial).
+adj(advanced).
+adj(last).
+adj(attractive).
+
 
 % ADVERBIOS
 adverbio(eng, adv(X)) --> [X], {adv(X)}.
@@ -619,7 +666,6 @@ adv(together).
 adv(every).
 adv(daily).
 adv(monthly).
-adv(around).
 adv(to_improve).
 adv(successfully).
 adv(after).
