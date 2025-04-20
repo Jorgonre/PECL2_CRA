@@ -391,6 +391,10 @@ prep(for).
 % MEJORAS DE DETECTAR COMPLEMENTOS%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+lugar((gp(prep(on)),gn(det(the),n(climbing_wall)))).
+tiempo((gadv(adv(yesterday)))).
+tiempo((gp(prep(in)),gn(det(the),n(afternoons)))).
+
 % Detecta el complemento directo recorriendo todos los hijos del gv
 detectar_complemento_directo(o(_, GV), CD) :-
     write('Procesando GV: '), writeln(GV), % Depuración
@@ -436,7 +440,109 @@ buscar_en_argumentos_CI(Pos, Arity, Termino, CI) :-
     (functor(Arg, gp, _) -> PosNew is Pos + 1, arg(PosNew, Termino, Arg1), 
     ArgF = (Arg, Arg1), % Concatenar el argumento y el complemento
     write('Encontrado CI en argumento: '), writeln(ArgF), 
-    CI = ArgF, ! % Busca recursivamente en el argumento
+    (tiempo(ArgF)
+    -> CI = none, !
+    ;( lugar(ArgF)
+    -> CI = none, !
+    ;CI = ArgF, !)) % Busca recursivamente en el argumento
     ;NextPos is Pos + 1, % Pasa al siguiente argumento
     buscar_en_argumentos_CI(NextPos, Arity, Termino, CI)).
 
+%Detecta el complemento circunstancial de modo recorriendo todos los hijos del gv
+detectar_ccm(o(_, GV), CCM) :-
+    write('Procesando GV: '), writeln(GV), % Depuración
+    buscar_gadj_en_termino(GV, CCM), !.
+
+% Caso en el que no hay complemento indirecto
+detectar_ccm(_, none).
+
+% Busca un gn en un término compuesto
+buscar_gadj_en_termino(Termino, CCM) :-
+    write('Procesando término: '), writeln(Termino), % Depuración
+    functor(Termino, _, Arity), % Obtiene el número de argumentos del término
+    buscar_en_argumentos_CCM(1, Arity, Termino, CCM).
+
+% Recorre los argumentos de un término compuesto y busca todos los gn
+buscar_en_argumentos_CCM(Pos, Arity, Termino, CCM) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, gadv, _) -> PosNew is Pos + 1, arg(PosNew, Termino, Arg1),
+    (functor(Arg1, gadj, _) 
+    -> ArgF = (Arg, Arg1), % Concatenar el argumento y el complemento
+    write('Encontrado CCM en argumento: '), writeln(ArgF),
+    CCM = ArgF, !  % Busca recursivamente en el argumento
+    ; NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCM(NextPos, Arity, Termino, CCM))
+    ; NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCM(NextPos, Arity, Termino, CCM)
+    ;(functor(Arg, gadj, _) 
+    -> write('Encontrado CCM en argumento: '), writeln(Arg),
+    CCM = Arg, ! % Busca recursivamente en el argumento
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCM(NextPos, Arity, Termino, CCM))).
+
+%Detecta el complemento circunstancial de lugar recorriendo todos los hijos del gv
+detectar_ccl(o(_, GV), CCL) :-
+    write('Procesando GV: '), writeln(GV), % Depuración
+    buscar_gp_en_termino(GV, CCL), !.
+
+% Caso en el que no hay complemento circunstancial de lugar
+detectar_ccl(_, none).
+
+% Busca un gn en un término compuesto
+buscar_gp_en_termino(Termino, CCL) :-
+    write('Procesando término: '), writeln(Termino), % Depuración
+    functor(Termino, _, Arity), % Obtiene el número de argumentos del término
+    buscar_en_argumentos_CCL(1, Arity, Termino, CCL).
+
+% Recorre los argumentos de un término compuesto y busca todos los gn
+buscar_en_argumentos_CCL(Pos, Arity, Termino, CCL) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, gp, _) -> PosNew is Pos + 1, arg(PosNew, Termino, Arg1), 
+    ArgF = (Arg, Arg1), % Concatenar el argumento y el complemento
+    write('Encontrado CCL en argumento: '), writeln(ArgF), 
+    CCLTemp = ArgF,  % Busca recursivamente en el argumento
+    (lugar(CCLTemp)
+    -> CCL = ArgF), ! % Asignar el resultado a CCL
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCL(NextPos, Arity, Termino, CCL)).
+
+%Detecta el complemento circunstancial de tiempo recorriendo todos los hijos del gv
+detectar_cct(o(_, GV), CCT) :-
+    write('Procesando GV: '), writeln(GV), % Depuración
+    buscar_gp_temp_en_termino(GV, CCT), !.
+
+% Caso en el que no hay complemento circunstancial de tiempo
+detectar_cct(_, none).
+
+% Busca un gn en un término compuesto
+buscar_gp_temp_en_termino(Termino, CCT) :-
+    write('Procesando término: '), writeln(Termino), % Depuración
+    functor(Termino, _, Arity), % Obtiene el número de argumentos del término
+    buscar_en_argumentos_CCT(1, Arity, Termino, CCT).
+
+% Recorre los argumentos de un término compuesto y busca todos los gn
+buscar_en_argumentos_CCT(Pos, Arity, Termino, CCT) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, gp, _) -> PosNew is Pos + 1, arg(PosNew, Termino, Arg1), 
+    ArgF = (Arg, Arg1), % Concatenar el argumento y el complemento
+    write('Encontrado CCT en argumento: '), writeln(ArgF), 
+    CCTTemp = ArgF,  % Busca recursivamente en el argumento
+    (tiempo(CCTTemp)
+    -> CCT = ArgF, !
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCT(NextPos, Arity, Termino, CCT)) % Asignar el resultado a CCT
+    ;(functor(Arg, gadv, _) ->
+    write('Encontrado CCT en argumento: '), writeln(Arg),
+    CCTTemp = Arg,
+    (tiempo(CCTTemp)
+    -> CCT = Arg, !
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCT(NextPos, Arity, Termino, CCT)) % Busca recursivamente en el argumento
+    ;NextPos is Pos + 1, % Pasa al siguiente argumento
+    buscar_en_argumentos_CCT(NextPos, Arity, Termino, CCT))).
