@@ -498,6 +498,24 @@ calcular_longitud_frase(PRED, Longitud) :-
                 Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
         ).
 
+% contar_palabras(+Árbol, -N)
+%   N es el número de hojas (palabras) en Árbol.
+contar_palabras(T, N) :-
+    T =.. [_Functor|Args],
+    (   Args = []                  % caso terminal: no hay hijos
+    ->  N = 1                     % cada nodo terminal cuenta como 1 palabra
+    ;   maplist(contar_palabras, Args, Ns),
+        sum_list(Ns, N)
+    ).
+
+% contar_sujeto_predicado(+Oración, -N_suj, -N_pred)
+%   Oración debe tener forma o(FraseNominal, FraseVerbal)
+%   N_suj es el nº de palabras en la FraseNominal,
+%   N_pred en la FraseVerbal.
+contar_sujeto_predicado(o(GN, GV), Nsuj, Npred) :-
+    contar_palabras(GN, Nsuj),
+    contar_palabras(GV, Npred).
+
 % Subraya cada una de las hojas de un árbol
 
 imprimir_palabra_subrayada(det(Palabra)) :- 

@@ -129,50 +129,113 @@ escribir_serie(Stream, Prefijo, Total, Categoria, Opts) :-
             )
         )
     ).
+%%--------------------------------------------------
+%% Extraer sujeto/predicado de un término o/2 o lista
+%%--------------------------------------------------
+
+sujeto(o(S,_), S) :- !.
+sujeto([T|_],    S) :- sujeto(T, S), !.
+predicado(o(_,P), P) :- !.
+predicado([T|_],    P) :- predicado(T, P), !.
 
 %%--------------------------------------------------
-%% Extraer sujeto/predicado de un término o/2 o de lista
+%% Contar hojas (palabras) en un árbol
 %%--------------------------------------------------
-sujeto(o(S, _), S) :- !.
-sujeto([Primero|_], S) :- sujeto(Primero, S), !.
 
-predicado(o(_, P), P) :- !.
-predicado([Primero|_], P) :- predicado(Primero, P), !.
+% contar_palabras(+Árbol, -N)
+%    N = nº de nodos terminales (hojas)
+contar_palabras(T, N) :-
+    T =.. [_Functor|Args],
+    ( Args = [] -> N = 1
+    ; maplist(contar_palabras, Args, Ns), sum_list(Ns, N)
+    ).
+
+% contar_sujeto_predicado(+Oracion, -Ns, -Np)
+%    Ns = hojas en sujeto, Np = hojas en predicado
+contar_sujeto_predicado(Or, Ns, Np) :-
+    sujeto(Or, S), contar_palabras(S, Ns),
+    predicado(Or, P), contar_palabras(P, Np).
 
 %%--------------------------------------------------
-%% metricas_draw(+ArchivoCSV)
+%% metricas_sp2(+ArchivoCSV)
+%%  Lee CSV(categoria;id;frase), imprime:
+%%  Cat Id Ns Np ( palabras sujeto/predicado)
 %%--------------------------------------------------
-metricas_draw(File) :-
-    % Leemos todas las filas, unificamos la primera con el header y quedamos sólo con Rows
+metricas_sp2(File) :-
     csv_read_file(File, [rec(categoria,id,frase)|Rows],
                   [separator(59), functor(rec), arity(3)]),
-    % Imprimimos cabecera de salida
-    format('Cat\tId\tCharsS\tCharsP\tTokS\tTokP~n'),
-    % Recorremos sólo las filas de datos
-    forall(
-      member(rec(Cat,Id,SentAtom), Rows),
+    format('Cat\tId\tSubjWords\tPredWords~n'),
+    forall(member(rec(Cat,Id,SentAtom), Rows),
       (
-        atom_string(SentAtom, Sentence),
-        preprocesar_en(Sentence, Tokens),
-        (   oracion(eng, Tree0, Tokens, [])
-        ->  % el DCG puede devolver Tree0 como lista de o(...) o como un único o(...)
-            ( is_list(Tree0) -> Tree0 = [Tree|_] ; Tree = Tree0 ),
-            % extraemos sujeto/predicado
-            sujeto(Tree, SujTree),
-            predicado(Tree, PredTree),
-            % calculamos #caracteres
-            calcular_longitud_frase(SujTree, ChS),
-            calcular_longitud_frase(PredTree, ChP),
-            % calculamos #tokens
-            with_output_to(atom(SujTxt),    imprimir_frase(SujTree)),
-            split_string(SujTxt, " ", "", SL), length(SL, TokS),
-            with_output_to(atom(PredTxt),   imprimir_frase(PredTree)),
-            split_string(PredTxt, " ", "", PL), length(PL, TokP),
-            % imprimimos la línea
-            format('~w\t~w\t~d\t~d\t~d\t~d~n',
-                   [Cat,Id,ChS,ChP,TokS,TokP])
-        ;   % si no parsea, avisamos pero seguimos
-            format('% Warning: no parse for id=~w: "~w"~n', [Id,Sentence])
+        atom_string(SentAtom,Sentence),
+        preprocesar_en(Sentence,Tokens),
+        ( oracion(eng, Tree0, Tokens, [])
+        -> ( is_list(Tree0) -> Trees=Tree0 ; Trees=[Tree0] ),
+           forall(member(Or,Trees),
+             ( contar_sujeto_predicado(Or,NS,NP),
+               format('~w\t~w\t~d\t~d~n',[Cat,Id,NS,NP])
+             )
+           )
+        ; format('~w\t~w\t0\t0~n',[Cat,Id])
         )
       )
+    ).
+
+
+
+ %% -----------------------------
+%% Extensión a metricas.pl: mtricas de verbos por categoría
+%% -----------------------------
+
+:- use_module(library(pairs)).  % Para group_pairs_by_key/2
+
+%% contar_verbos(+Term, -N)
+%% Cuenta recursivamente cuántos functors v(...) (verbos)
+%% hay en Term o en cualquier lista anidada.
+contar_verbos(Term, 0) :-
+    var(Term), !.
+contar_verbos(Term, N) :-
+    is_list(Term), !,
+    maplist(contar_verbos, Term, Ns),
+    sum_list(Ns, N).
+contar_verbos(Term, N) :-
+    nonvar(Term),
+    Term =.. [F|Args],
+    ( F == v -> N0 = 1 ; N0 = 0 ),
+    maplist(contar_verbos, Args, Ns),
+    sum_list(Ns, Sum),
+    N is N0 + Sum.
+
+%% metricas_verbos(+ArchivoCSV)
+%% Lee CSV(categoria;id;frase), analiza cada frase,
+%% y muestra por categoría:
+%%   • número de oraciones analizadas
+%%   • total de verbos encontrados
+%%   • media de verbos por oración
+metricas_verbos(File) :-
+    csv_read_file(File, [rec(categoria,id,frase)|Rows],
+                  [separator(59), functor(rec), arity(3)]),
+    findall(Cat-NV,
+        (
+            member(rec(Cat,_,Atom), Rows),
+            atom_string(Atom, Sentence),
+            preprocesar_en(Sentence, Tokens),
+            oracion(eng, Tree0, Tokens, []),
+            ( is_list(Tree0) -> Trees = Tree0 ; Trees = [Tree0] ),
+            member(Or, Trees),
+            contar_verbos(Or, NV)
+        ),
+        Pairs),
+    group_pairs_by_key(Pairs, Grouped),
+    forall(
+        member(Cat-ListNV, Grouped),
+        (
+            length(ListNV, NumOr),
+            sum_list(ListNV, SumV),
+            AvgV is SumV / NumOr,
+            format('\n--- Categoría: ~w ---\n', [Cat]),
+            format('Oraciones:          ~d\n', [NumOr]),
+            format('Total de verbos:    ~d\n', [SumV]),
+            format('Verbos por oración: avg=~2f\n', [AvgV])
+        )
     ).
