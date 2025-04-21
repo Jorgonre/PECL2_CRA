@@ -723,14 +723,14 @@ oracion_sujeto_omitido_jpn(jpn, OracionesTotales) -->
     (g_nombre_propio_jpn(jpn, Suj); g_nominal_jpn(jpn, Suj)),
     g_particula_jpn(jpn,P1),
     g_verbal_jpn(jpn, GV1),
-    g_particula_jpn(jpn,P2),
+    g_soushite_jpn(jpn,S),
     g_verbal_jpn(jpn, GV2),
     {
         sujetos_de_compuesto_jpn(Suj, Sujetos),
         GVsIniciales = [GV1, GV2]
     },
     (
-        (g_particula_jpn(jpn, P)),
+        (g_soushite_jpn(jpn, S)),
         oracion_sujeto_omitido_resto_verbs_collect_jpn(jpn, GVsResto),
         { append(GVsIniciales, GVsResto, TodosGVs),
           generar_oraciones(Sujetos, TodosGVs, OracionesTotales)
