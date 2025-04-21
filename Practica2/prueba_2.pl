@@ -414,7 +414,8 @@ buscar_en_argumentos_CD(Pos, Arity, Termino, CD) :-
     Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
     arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
     write('Procesando argumento: '), writeln(Arg), % Depuración
-    (functor(Arg, gn, _) -> write('Encontrado CD en argumento: '), writeln(Arg), CD = Arg, ! % Busca recursivamente en el argumento
+    (functor(Arg, gp, _) -> CD = none, ! % Si el argumento es un gp, no es un complemento directo
+    ;functor(Arg, gn, _) -> write('Encontrado CD en argumento: '), writeln(Arg), CD = Arg, ! % Busca recursivamente en el argumento
     ;NextPos is Pos + 1, % Pasa al siguiente argumento
     buscar_en_argumentos_CD(NextPos, Arity, Termino, CD)).
 
@@ -546,3 +547,231 @@ buscar_en_argumentos_CCT(Pos, Arity, Termino, CCT) :-
     buscar_en_argumentos_CCT(NextPos, Arity, Termino, CCT)) % Busca recursivamente en el argumento
     ;NextPos is Pos + 1, % Pasa al siguiente argumento
     buscar_en_argumentos_CCT(NextPos, Arity, Termino, CCT))).
+
+%Transformación de frase con complementos 
+transformar_frase_con_complementos(FraseOriginal, FraseTransformada) :-
+    detectar_complemento_directo(FraseOriginal, CD),
+    detectar_complemento_indirecto(FraseOriginal, CI),
+    detectar_ccm(FraseOriginal, CCM),
+    detectar_ccl(FraseOriginal, CCL),
+    detectar_cct(FraseOriginal, CCT),
+    write('Complemento directo: '), writeln(CD),
+    write('Complemento indirecto: '), writeln(CI),
+    write('Complemento circunstancial de modo: '), writeln(CCM),
+    write('Complemento circunstancial de lugar: '), writeln(CCL),
+    write('Complemento circunstancial de tiempo: '), writeln(CCT),
+    % Realiza la transformación de la frase original
+    transformar_frase_con_cd(FraseOriginal, FraseTransformadaCD),
+    transformar_frase_con_ci(FraseTransformadaCD, FraseTransformadaCI),
+    transformar_frase_con_ccm(FraseTransformadaCI, FraseTransformadaCCM),
+    transformar_frase_con_ccl(FraseTransformadaCCM, FraseTransformadaCCL),
+    transformar_frase_con_cct(FraseTransformadaCCL, FraseTransformada).
+
+% Transformar con complemento directo (sustituyendo el CD por cd(CD))
+transformar_frase_con_cd(FraseOriginal, FraseTransformada) :-
+    detectar_complemento_directo(FraseOriginal, CD),
+    (CD \= none
+    -> sustituir_cd_en_termino(FraseOriginal, CD, FraseTransformada) % Realiza la sustitución directamente
+    ; FraseTransformada = FraseOriginal). % Si no hay CD, deja la frase igual
+
+
+% Sustituye el complemento directo (gn(...)) por cd(gn(...)) recorriendo los argumentos
+sustituir_cd_en_termino(Termino, CD, TerminoTransformado) :-
+    functor(Termino, Functor, Arity), % Obtiene el functor y la aridad del término
+    sustituir_cd_en_argumentos(1, Arity, Termino, CD, TerminoTransformado, Functor).
+
+% Recorre los argumentos de un término compuesto y realiza la sustitución
+sustituir_cd_en_argumentos(Pos, Arity, Termino, CD, TerminoTransformado, Functor) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, Functor2, NewArity),
+     Functor2 == gv -> % Verifica si el argumento es un término compuesto
+        write('Encontrado término compuesto en argumento: '), writeln(Arg), % Depuración
+        sustituir_cd_en_argumentos(1, NewArity, Arg, CD, NuevoArg, Functor2)
+    ; true), % Llama recursivamente para los argumentos del término
+    (Arg = CD -> % Si el argumento actual es el complemento directo
+        write('Sustituyendo CD en argumento: '), writeln(Arg), % Depuración
+        cd(CD) = NuevoArg, % Crea la nueva estructura etiquetada
+        setarg(Pos, Termino, NuevoArg), % Sustituye el argumento en la posición Pos
+        TerminoTransformado = Termino, 
+        write('El término transformado es: '), writeln(TerminoTransformado), ! % El término transformado es el mismo término modificado
+    ;   NextPos is Pos + 1, % Pasa al siguiente argumento
+        sustituir_cd_en_argumentos(NextPos, Arity, Termino, CD, TerminoTransformado, Functor)).
+sustituir_cd_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
+    Pos > Arity. % Caso base: cuando Pos supera la aridad, termina
+
+% Transformar con complemento indirecto (sustituyendo el CI por ci(CI))
+transformar_frase_con_ci(FraseOriginal, FraseTransformada) :-
+    detectar_complemento_indirecto(FraseOriginal, CI),
+    (CI \= none
+    -> sustituir_ci_en_termino(FraseOriginal, CI, FraseTransformada) % Realiza la sustitución directamente
+    ; FraseTransformada = FraseOriginal). % Si no hay CI, deja la frase igual
+
+
+% Sustituye el complemento indirecto (gp(prep(...)), gn(...)) por ci(gp(prep(...)), gn(...)) recorriendo los argumentos
+sustituir_ci_en_termino(Termino, CI, TerminoTransformado) :-
+    functor(Termino, Functor, Arity), % Obtiene el functor y la aridad del término
+    sustituir_ci_en_argumentos(1, Arity, Termino, CI, TerminoTransformado, Functor).
+
+% Recorre los argumentos de un término compuesto y realiza la sustitución
+sustituir_ci_en_argumentos(Pos, Arity, Termino, CI, TerminoTransformado, Functor) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, Functor2, NewArity),
+     Functor2 == gv -> % Verifica si el argumento es un término compuesto
+        write('Encontrado término compuesto en argumento: '), writeln(Arg), % Depuración
+        sustituir_ci_en_argumentos(1, NewArity, Arg, CI, NuevoArg, Functor2), !
+    ; true), % Llama recursivamente para los argumentos del término
+    arg(1, CI, Arg1), % Obtiene el primer argumento del complemento indirecto
+    arg(2, CI, Arg2), % Obtiene el segundo argumento del complemento indirecto
+    (NextPos is Pos + 1, % Pasa al siguiente argumento
+    arg(NextPos, Termino, NextArg), % Obtiene el argumento en la posición Pos
+    Arg = Arg1,
+    NextArg = Arg2 -> % Si el argumento actual es el complemento directo
+        write('Sustituyendo CI en argumento: '), writeln(Arg), % Depuración
+        ci(Arg1) = NuevoArg1, % Crea la nueva estructura etiquetada
+        ci(Arg2) = NuevoArg2, % Crea la nueva estructura etiquetada
+        setarg(Pos, Termino, NuevoArg1), % Sustituye el argumento en la posición Pos
+        setarg(NextPos, Termino, NuevoArg2), % Sustituye el argumento en la posición Pos
+        TerminoTransformado = Termino,
+        write('El término transformado es: '), writeln(TerminoTransformado), ! % El término transformado es el mismo término modificado
+    ;   NextPos is Pos + 1, % Pasa al siguiente argumento
+        sustituir_ci_en_argumentos(NextPos, Arity, Termino, CI, TerminoTransformado, Functor)).
+sustituir_ci_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
+    Pos > Arity. % Caso base: cuando Pos supera la aridad, termina
+
+% Transformar con ccm (sustituyendo el CCM por ccm(CCM))
+transformar_frase_con_ccm(FraseOriginal, FraseTransformada) :-
+    detectar_ccm(FraseOriginal, CCM),
+    (CCM \= none
+    -> sustituir_ccm_en_termino(FraseOriginal, CCM, FraseTransformada) % Realiza la sustitución directamente
+    ; FraseTransformada = FraseOriginal). % Si no hay CCM, deja la frase igual
+
+
+% Sustituye el ccm recorriendo los argumentos
+sustituir_ccm_en_termino(Termino, CCM, TerminoTransformado) :-
+    functor(Termino, Functor, Arity), % Obtiene el functor y la aridad del término
+    sustituir_ccm_en_argumentos(1, Arity, Termino, CCM, TerminoTransformado, Functor).
+
+% Recorre los argumentos de un término compuesto y realiza la sustitución
+sustituir_ccm_en_argumentos(Pos, Arity, Termino, CCM, TerminoTransformado, Functor) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, Functor2, NewArity),
+     Functor2 == gv -> % Verifica si el argumento es un término compuesto
+        write('Encontrado término compuesto en argumento: '), writeln(Arg), % Depuración
+        sustituir_ccm_en_argumentos(1, NewArity, Arg, CCM, NuevoArg, Functor2), !
+    ; true), % Llama recursivamente para los argumentos del término
+    ( functor(CCM, _, ArityCCM), % Obtiene la aridad del complemento circunstancial de modo
+    ArityCCM =< 1 % Verifica si la aridad es 1
+    -> (Arg = CCM -> % Si el argumento actual es el ccm
+        write('Sustituyendo CCM en argumento: '), writeln(Arg), % Depuración
+        ccm(CCM) = NuevoArg, % Crea la nueva estructura etiquetada
+        setarg(Pos, Termino, NuevoArg), % Sustituye el argumento en la posición Pos
+        TerminoTransformado = Termino, 
+        write('El término transformado es: '), writeln(TerminoTransformado), ! % El término transformado es el mismo término modificado
+    ;   NextPos is Pos + 1, % Pasa al siguiente argumento
+        sustituir_ccm_en_argumentos(NextPos, Arity, Termino, CCM, TerminoTransformado, Functor))
+    ;
+    arg(1, CCM, Arg1), % Obtiene el primer argumento del complemento circunstancial de modo
+    arg(2, CCM, Arg2), % Obtiene el segundo argumento del complemento circunstancial de modo
+    (NextPos is Pos + 1, % Pasa al siguiente argumento
+    arg(NextPos, Termino, NextArg), % Obtiene el argumento en la posición Pos
+    Arg = Arg1,
+    NextArg = Arg2 -> % Si el argumento actual es el ccm
+        write('Sustituyendo CCM en argumento: '), writeln(Arg), % Depuración
+        ccm(Arg1) = NuevoArg1, % Crea la nueva estructura etiquetada
+        ccm(Arg2) = NuevoArg2, % Crea la nueva estructura etiquetada
+        setarg(Pos, Termino, NuevoArg1), % Sustituye el argumento en la posición Pos
+        setarg(NextPos, Termino, NuevoArg2), % Sustituye el argumento en la posición Pos
+        TerminoTransformado = Termino,
+        write('El término transformado es: '), writeln(TerminoTransformado), ! % El término transformado es el mismo término modificado
+    ;   NextPos is Pos + 1, % Pasa al siguiente argumento
+        sustituir_ccm_en_argumentos(NextPos, Arity, Termino, CCM, TerminoTransformado, Functor))).
+sustituir_ccm_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
+    Pos > Arity. % Caso base: cuando Pos supera la aridad, termina
+
+% Transformar con ccl (sustituyendo el CCL por ccl(CCL))
+transformar_frase_con_ccl(FraseOriginal, FraseTransformada) :-
+    detectar_ccl(FraseOriginal, CCL),
+    (CCL \= none
+    -> sustituir_ccl_en_termino(FraseOriginal, CCL, FraseTransformada) % Realiza la sustitución directamente
+    ; FraseTransformada = FraseOriginal). % Si no hay CCL, deja la frase igual
+
+
+% Sustituye el ccl recorriendo los argumentos
+sustituir_ccl_en_termino(Termino, CCL, TerminoTransformado) :-
+    functor(Termino, Functor, Arity), % Obtiene el functor y la aridad del término
+    sustituir_ccl_en_argumentos(1, Arity, Termino, CCL, TerminoTransformado, Functor).
+
+% Recorre los argumentos de un término compuesto y realiza la sustitución
+sustituir_ccl_en_argumentos(Pos, Arity, Termino, CCL, TerminoTransformado, Functor) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, Functor2, NewArity),
+     Functor2 == gv -> % Verifica si el argumento es un término compuesto
+        write('Encontrado término compuesto en argumento: '), writeln(Arg), % Depuración
+        sustituir_ccl_en_argumentos(1, NewArity, Arg, CCL, NuevoArg, Functor2), !
+    ; true), % Llama recursivamente para los argumentos del término
+    arg(1, CCL, Arg1), % Obtiene el primer argumento del complemento indirecto
+    arg(2, CCL, Arg2), % Obtiene el segundo argumento del complemento indirecto
+    (NextPos is Pos + 1, % Pasa al siguiente argumento
+    arg(NextPos, Termino, NextArg), % Obtiene el argumento en la posición Pos
+    Arg = Arg1,
+    NextArg = Arg2 -> % Si el argumento actual es el complemento circunstancial del lugar
+        write('Sustituyendo CCL en argumento: '), writeln(Arg), % Depuración
+        ccl(Arg1) = NuevoArg1, % Crea la nueva estructura etiquetada
+        ccl(Arg2) = NuevoArg2, % Crea la nueva estructura etiquetada
+        setarg(Pos, Termino, NuevoArg1), % Sustituye el argumento en la posición Pos
+        setarg(NextPos, Termino, NuevoArg2), % Sustituye el argumento en la posición Pos
+        TerminoTransformado = Termino,
+        write('El término transformado es: '), writeln(TerminoTransformado), ! % El término transformado es el mismo término modificado
+    ;   NextPos is Pos + 1, % Pasa al siguiente argumento
+        sustituir_ccl_en_argumentos(NextPos, Arity, Termino, CCL, TerminoTransformado, Functor)).
+sustituir_ccl_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
+    Pos > Arity. % Caso base: cuando Pos supera la aridad, termina
+
+% Transformar con cct (sustituyendo el CCT por cct(CCT))
+transformar_frase_con_cct(FraseOriginal, FraseTransformada) :-
+    detectar_cct(FraseOriginal, CCT),
+    (CCT \= none
+    -> sustituir_cct_en_termino(FraseOriginal, CCT, FraseTransformada) % Realiza la sustitución directamente
+    ; FraseTransformada = FraseOriginal). % Si no hay CCT, deja la frase igual
+
+
+% Sustituye el cct recorriendo los argumentos
+sustituir_cct_en_termino(Termino, CCT, TerminoTransformado) :-
+    functor(Termino, Functor, Arity), % Obtiene el functor y la aridad del término
+    sustituir_cct_en_argumentos(1, Arity, Termino, CCT, TerminoTransformado, Functor).
+
+% Recorre los argumentos de un término compuesto y realiza la sustitución
+sustituir_cct_en_argumentos(Pos, Arity, Termino, CCT, TerminoTransformado, Functor) :-
+    Pos =< Arity, % Asegúrate de que no hemos superado el número de argumentos
+    arg(Pos, Termino, Arg), % Obtiene el argumento en la posición Pos
+    write('Procesando argumento: '), writeln(Arg), % Depuración
+    (functor(Arg, Functor2, NewArity),
+     Functor2 == gv -> % Verifica si el argumento es un término compuesto
+        write('Encontrado término compuesto en argumento: '), writeln(Arg), % Depuración
+        sustituir_cct_en_argumentos(1, NewArity, Arg, CCT, NuevoArg, Functor2), !
+    ; true), % Llama recursivamente para los argumentos del término
+    arg(1, CCT, Arg1), % Obtiene el primer argumento del complemento indirecto
+    arg(2, CCT, Arg2), % Obtiene el segundo argumento del complemento indirecto
+    (NextPos is Pos + 1, % Pasa al siguiente argumento
+    arg(NextPos, Termino, NextArg), % Obtiene el argumento en la posición Pos
+    Arg = Arg1,
+    NextArg = Arg2 -> % Si el argumento actual es el complemento circunstancial del lugar
+        write('Sustituyendo CCT en argumento: '), writeln(Arg), % Depuración
+        cct(Arg1) = NuevoArg1, % Crea la nueva estructura etiquetada
+        cct(Arg2) = NuevoArg2, % Crea la nueva estructura etiquetada
+        setarg(Pos, Termino, NuevoArg1), % Sustituye el argumento en la posición Pos
+        setarg(NextPos, Termino, NuevoArg2), % Sustituye el argumento en la posición Pos
+        TerminoTransformado = Termino,
+        write('El término transformado es: '), writeln(TerminoTransformado), ! % El término transformado es el mismo término modificado
+    ;   NextPos is Pos + 1, % Pasa al siguiente argumento
+        sustituir_cct_en_argumentos(NextPos, Arity, Termino, CCT, TerminoTransformado, Functor)).
+sustituir_cct_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
+    Pos > Arity. % Caso base: cuando Pos supera la aridad, termina
