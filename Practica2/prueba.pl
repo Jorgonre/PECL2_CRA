@@ -139,7 +139,7 @@ coma --> [coma].
 g_nominal(eng, gn(N)) --> nombre(eng, N).
 g_nominal(eng, gn(D,N)) --> determinante(eng, D), nombre(eng, N).
 g_nominal(eng, gn(D, ADJ, N)) --> determinante(eng, D), adjetivo(eng, ADJ),nombre(eng, N).
-g_nominal(eng, gn(ADJ, N)) --> adjetivo(eng, ADJ), nombre(ENG, N).
+g_nominal(eng, gn(ADJ, N)) --> adjetivo(eng, ADJ), nombre(eng, N).
 
 
 
@@ -698,6 +698,210 @@ prep(on_weekends).
 prep(before_school).
 
 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ORACIONES JAPONESAS%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+oracion_japones(jpn, [O | Os]) -->
+    (oracion_sujeto_omitido_jpn(jpn, O))
+    ;
+    (oracion_simple_jpn(jpn, O))
+    ;
+    (oracion_sujeto_omitido_jpn(jpn, O),
+    (g_soushite_jpn(jpn, P)),
+    oracion_japones(eng, Os))
+    ;
+    ((oracion_simple_jpn(jpn, O)),
+    (g_soushite_jpn(jpn, P)),
+    oracion_japones(jpn, Os))
+    .
+
+
+oracion_sujeto_omitido_jpn(jpn, OracionesTotales) -->
+    (g_nombre_propio_jpn(jpn, Suj); g_nominal_jpn(jpn, Suj)),
+    g_particula_jpn(jpn,P1),
+    g_verbal_jpn(jpn, GV1),
+    g_soushite_jpn(jpn,S),
+    g_verbal_jpn(jpn, GV2),
+    {
+        sujetos_de_compuesto_jpn(Suj, Sujetos),
+        GVsIniciales = [GV1, GV2]
+    },
+    (
+        (g_soushite_jpn(jpn, S)),
+        oracion_sujeto_omitido_resto_verbs_collect_jpn(jpn, GVsResto),
+        { append(GVsIniciales, GVsResto, TodosGVs),
+          generar_oraciones(Sujetos, TodosGVs, OracionesTotales)
+        }
+    ;
+        { generar_oraciones(Sujetos, GVsIniciales, OracionesTotales) }
+    ).
+
+% Recolecta todos los GV restantes recursivamente
+oracion_sujeto_omitido_resto_verbs_collect_jpn(jpn, [GV | Resto]) -->
+    g_verbal_jpn(jpn, GV),
+    (
+        (g_particula_jpn(jpn, P)),
+        oracion_sujeto_omitido_resto_verbs_collect_jpn(jpn, Resto)
+    ;
+        { Resto = [] }
+    ).
+
+
+oracion_simple_jpn(jpn, o(Suj, P, GV)) -->
+    (g_nombre_propio_jpn(jpn, Suj); g_nominal_jpn(jpn, Suj)),
+    g_particula_jpn(jpn, P),
+    g_verbal_jpn(jpn, GV).
+
+
+
+% Descompone un sujeto compuesto en una lista de sujetos individuales
+sujetos_de_compuesto_jpn(g_nom_prop_jpn(NP1, NP2), [g_nom_prop_jpn(NP1), g_nom_prop_jpn(NP2)]) :- !. 
+sujetos_de_compuesto_jpn(Sujeto, [Sujeto]).
+
+g_verbal_jpn(jpn, gv(N, P, OBJ)) -->
+        g_nominal_jpn(jpn, N),
+        g_particula_jpn(jpn, P),
+        (adjetivo_jpn(jpn, OBJ) ;verbo_jpn(jpn, OBJ)).
+
+g_verbal_jpn(jpn, gv(N1, P1, OBJ1, P2,N2, P3, OBJ2)) -->
+        g_nominal_jpn(jpn, N1),
+        g_particula_jpn(jpn, P1),
+        (adjetivo_jpn(jpn, OBJ1) ;verbo_jpn(jpn, OBJ1)),
+        g_particula_jpn(jpn, P2),
+        g_nominal_jpn(jpn, N2),
+        g_particula_jpn(jpn, P3),
+        (adjetivo_jpn(jpn, OBJ2) ;verbo_jpn(jpn, OBJ2)).
+
+g_verbal_jpn(jpn, gv(N1, P1, OBJ1, N2, P2, OBJ2)) -->
+        g_nominal_jpn(jpn, N1),
+        g_particula_jpn(jpn, P1),
+        (adjetivo_jpn(jpn, OBJ1) ;verbo_jpn(jpn, OBJ1)),
+        g_nominal_jpn(jpn, N2),
+        g_particula_jpn(jpn, P2),
+        (adjetivo_jpn(jpn, OBJ2) ;verbo_jpn(jpn, OBJ2)).
+
+g_verbal_jpn(jpn, gv(N1, P1, N2, P2, OBJ)) -->
+        g_nominal_jpn(jpn, N1),
+        g_particula_jpn(jpn, P1),
+        g_nominal_jpn(jpn, N2),
+        g_particula_jpn(jpn, P2),
+        (adjetivo_jpn(jpn, OBJ) ;verbo_jpn(jpn, OBJ)).
+
+g_adjetival_jpn(jpn, gadj(ADJ)) --> adjetivo_jpn(jpn, ADJ).
+g_adverbial_jpn(jpn, gadv(ADV)) --> adverbio_jpn(jpn, ADV).
+
+% CONJUNCIONES
+g_particula_jpn(jpn, part(wa)) --> [wa].
+g_particula_jpn(jpn, part(ni)) --> [ni].
+g_particula_jpn(jpn, part(demo)) --> [demo].
+g_particula_jpn(jpn, part(kedo)) --> [kedo].
+g_particula_jpn(jpn, part(to)) --> [to].
+g_particula_jpn(jpn, part(ga)) --> [ga].
+g_particula_jpn(jpn, part(wo)) --> [wo].
+
+g_soushite_jpn(jpn,part(soushite))-->[soushite].
+
+% GRUPOS SINTÁCTICOS
+g_nominal_jpn(jpn, gn(N)) --> nombre_jpn(jpn, N).
+g_nominal_jpn(jpn, gn(D,N)) --> determinante_jpn(jpn, D), nombre_jpn(jpn, N).
+g_nominal_jpn(jpn, gn(D, ADJ, N)) --> determinante_jpn(jpn, D), adjetivo_jpn(jpn, ADJ),nombre_jpn(jpn, N).
+g_nominal_jpn(jpn, gn(ADJ, N)) --> adjetivo_jpn(jpn, ADJ), nombre_jpn(jpn, N).
+
+
+% Nombre propio simple
+g_nombre_propio_jpn(jpn, g_nom_prop(NP)) -->
+    nombre_propio_jpn(jpn, NP).
+
+% Nombre propio compuesto con conjunción
+g_nombre_propio_jpn(jpn, g_nom_prop(NP1, NP2)) -->
+    nombre_propio_jpn(jpn, NP1),
+    g_particula_jpn(jpn, _),
+    nombre_propio_jpn(jpn, NP2).
+
+    
+g_nombre_propio_jpn(jpn, g_nom_prop(NP1, NP2, NPs)) -->
+    nombre_propio_jpn(jpn, NP1),
+    g_particula_jpn(jpn, _),
+    nombre_propio_jpn(jpn, NP2),
+    g_nombre_propio_resto_jpn(jpn, NPs).
+
+% Recolecta los nombres propios adicionales recursivamente
+g_nombre_propio_resto_jpn(jpn, [NP | NPs]) -->
+    g_particula_jpn(jpn, _),
+    nombre_propio_jpn(jpn, NP),
+    g_nombre_propio_resto_jpn(jpn, NPs).
+g_nombre_propio_resto_jpn(jpn, []) --> [].
+
+
+
+
+
+
+nombre_propio_jpn(jpn, n_p(X)) --> [X], {n_p(X)}.
+
+
+
+adjetivo_jpn(jpn, adj(X)) --> [X], {adj(X)}.
+
+adverbio_jpn(jpn, adv(X)) --> [X], {adv(X)}.
+
+verbo_jpn(jpn, v(Y)) --> [Y], {v(X,Y)}.
+verbo_jpn(jpn, v(X)) --> [X], {v(X)}.
+%verbo_jpn(jpn, v(is, G)) --> [is, G], { gerundio(G) }.
+%verbo_jpn(jpn, v(was, G)) --> [was, G], { gerundio(G) }.
+%verbo_jpn(jpn, v(are, G)) --> [are, G], { gerundio(G) }.
+%verbo_jpn(jpn, v(practices, G)) --> [practices, G], {gerundio(G) }.
+%verbo_jpn(jpn, v(enjoys, G)) --> [enjoys, G], {gerundio(G) }.
+%verbo_jpn(jpn, v(goes, G)) --> [goes, G], {gerundio(G) }.
+%verbo_jpn(jpn, v(is, P)) --> [is, P], { pasado(P) }.
+%verbo_jpn(jpn, v(has, P)) --> [has, P], { pasado(P) }.
+%verbo_jpn(jpn, v(has, been ,P)) --> [has, been,P], { pasado(P) }.
+%verbo_jpn(jpn, v(was, P)) --> [was, P], { pasado(P) }.
+
+
+% NOMBRES
+% Caso triple:
+nombre_jpn(jpn, n(Nombre)) -->
+    [X, Y, Z],
+    { nombre_compuesto(X, Y),
+      nombre_compuesto(Y, Z),
+      atomic_list_concat([X, Y, Z], '_', Nombre) }.
+
+% Caso doble:
+nombre_jpn(jpn, n(Nombre)) -->
+    [X, Y],
+    { nombre_compuesto(X, Y),
+      atomic_list_concat([X, Y], '_', Nombre) }.
+
+% Caso simple:    
+nombre_jpn(jpn, n(X)) --> [X], {n(X)}.
+
+
+determinante_jpn(jpn, det(X)) --> [X], {det(X)}.
+
+
+n_p(HARUKO).
+n_p(YUI).
+n_p(KANA).
+
+n(hana).
+n(koohii).
+n(saakaa).
+n(manga).
+n(eigakan).
+n(bangohan).
+n(resutoran).
+
+
+adj(suki).
+adj(kirai).
+
+v(itte).
+v(tabemasu).
+v(ikimasu).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
