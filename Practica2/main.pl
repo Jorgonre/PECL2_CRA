@@ -6,6 +6,8 @@
 :- use_module(preprocesar,         []).
 :- use_module(flexion,             []).
 :- use_module(traductor,           []).
+:- use_module(draw_html, [draw_html/2]).      % para generar HTML con el subrayado
+
 
 
 
@@ -45,10 +47,16 @@ run_analysis_option(1, Trees) :-               % dibujar
     forall(member(T, Trees),
           ( nl, draw:draw(T), nl )).
           
-run_analysis_option(2, Trees) :-               % análisis subrayado
-    nl,
-    draw:imprimir_frase_subrayada(Trees),
-    nl.
+run_analysis_option(2, Trees) :-
+    forall(
+        nth1(I, Trees, Tree),
+        (
+            format('Generando árbol subrayado #~w…~n', [I]),
+            format(atom(Base), 'analisis_subrayado_~w', [I]),
+            draw_html:draw_html(Tree, Base)
+        )
+    ).
+
 
 run_analysis_option(_, _) :-
     writeln('Opcion no reconocida, intente de nuevo.').
