@@ -1040,3 +1040,5 @@ imprimir_complementos(Arbol) :-
         nl, % Salto de línea
         imprimir_etiqueta_complementos(Arbol).
 
+
+
