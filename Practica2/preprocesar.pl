@@ -22,19 +22,10 @@
 preprocesar_es(Sentence, Tokens) :-
     atom_or_string_to_string(Sentence, Str),
     string_lower(Str, Lower),
-    expand_contractions_es(Lower, Expanded),
     remove_punctuation_es(Expanded, CleanPunct),
     split_string(CleanPunct, " ", "", Split),
     exclude(==( ""), Split, NonEmpty),
     maplist(atom_string, Tokens, NonEmpty).
-
-%% Expansión de contracciones en español
-expand_contractions_es(In, Out) :-
-    ESContracciones = [
-        ("del", "de el"),
-        ("al",  "a el")
-    ],
-    expand_all(ESContracciones, In, Out).
 
 remove_punctuation_es(In, Out) :-
     string_chars(In, Chars),
