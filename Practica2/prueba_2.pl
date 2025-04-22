@@ -1,5 +1,5 @@
 
-
+:- module(prueba_2, [oracion/4]). 
 
 
 oracion(eng, [O | Os]) -->

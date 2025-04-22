@@ -8,8 +8,51 @@
 :- use_module(flexion,             []).   % load_verb_db/1, conjugado/5, plural/singular helpers
 :- use_module(traductor,           []).   % load_verb_db/1 (alias), traducir_frase_es_en/2, traducir_frase_en_es/2
 :- use_module(metricas,            []).   % oracion grammar utils & draw
-:- use_module(draw,               [draw/1]).
-:- consult('prueba_2.pl').                 % gramática oracion/4, etc.
+:- use_module(draw,               [draw/1, imprimir_frase_subrayada/1]).
+:- use_module(prueba_2).                % gramática oracion/4, etc.
+
+
+% --------------------------------------------------------------
+%   LISTAS “ABIERTAS”  →  LISTAS NORMALES
+% --------------------------------------------------------------
+% close_list(+QuizáListaAbierta, -ListaCerrada)
+close_list(Var,              []) :- var(Var), !.
+close_list([],               []).
+close_list([H|T], [H|Rest]) :- close_list(T, Rest).
+
+% normalise_trees(+Raw, -ListaArboles)
+%   • Raw ya es lista  -> la cierra por la cola.
+%   • Raw es un árbol  -> lo mete en lista unitaria.
+normalise_trees(Raw, List) :-
+    (   Raw = [_|_] -> close_list(Raw, List)
+    ;   List = [Raw]
+    ).
+
+% -------------------------------------------------------------------
+%  Sub‑menú para los árboles analizados
+% -------------------------------------------------------------------
+analysis_menu(Trees) :-
+    repeat,
+        nl, writeln('======= ANALISIS ======='),
+        writeln(' 1) Dibujar arbol'),
+        writeln(' 2) Imprimir analisis subrayado'),
+        writeln(' 0) Volver al menu principal'), nl,
+        prompt_choice(Opt),
+        (   Opt == 0
+        ->  !                                  %  salir del repeat
+        ;   run_analysis_option(Opt, Trees),
+            fail                               %  volver a mostrar sub‑menú
+        ).
+
+run_analysis_option(1, Trees) :-               % dibujar
+    forall(member(T, Trees),
+          ( nl, draw:draw(T), nl )).
+run_analysis_option(2, Trees) :-               % análisis subrayado
+    forall(member(T, Trees),
+          ( nl, draw:imprimir_frase_subrayada(T), nl )).
+run_analysis_option(_, _) :-
+    writeln('Opcion no reconocida, intente de nuevo.').
+
 
 % -----------------------------------------------------------------------------
 % PÚBLICO: menu/0 –  bucle interactivo
@@ -85,15 +128,17 @@ process_choice(6) :-
     format('Traduccion: ~s~n', [Out]), fail,
     !, fail.
 
-% 7) Analizar + Dibujar árbol --------------------------------------------------
+% 7) Analizar + Dibujar árbol ---------------------------------------
 process_choice(7) :-
     ask_sentence('Sentence in English', In),
     preprocesar:preprocesar_en(In, Toks),
-    ( oracion(eng, Tree, Toks, [])
-    -> writeln('Analisis (estructura Prolog):'), writeln(Tree),
-       writeln('\n→ Arbol:'), draw:draw(Tree)
-    ;  writeln('No se pudo analizar con la gramatica.') ),
-    !,fail.
+    (   oracion(eng, Raw, Toks, [])
+    ->  normalise_trees(Raw, Trees),
+        analysis_menu(Trees)            % ← nuevo sub‑menú
+    ;   writeln('No se pudo analizar con la gramatica.')
+    ),
+    !, fail.                            % volver al menú principal
+
 
 % -----------------------------------------------------------------------------
 % UTILIDADES de entrada de texto/átomos
