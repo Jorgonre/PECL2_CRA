@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<style>
+ table.tree{border-collapse:collapse;width:100%;}
+ table.tree td{text-align:center;padding:4px;font-family:sans-serif;}
+ /* toda la fila de palabras en azul y negrita */
+ tr.words td{background:#c2e7ff;font-weight:bold;}
+ /* luego pintamos sujeto/predicado */
+ tr.words td.subj{background:#d1e7dd;}
+ tr.words td.pred{background:#f8d7da;}
+ tr.tags  td{background:#ffe599;}
+ tr.cats  td{border-top:2px solid #333;}
+</style></head><body><table class="tree">
+<tr class="words"><td class="0<1->subj;pred" style="border-right:3px solid #333">jose</td><td class="1<1->subj;pred">is</td><td class="2<1->subj;pred">dark-skinned</td></tr>
+<tr class="tags"><td class="0<1->subj;pred" style="border-right:3px solid #333">n_p</td><td class="1<1->subj;pred">v</td><td class="2<1->subj;pred">adj/CCM</td></tr>
+<tr class="cats"><td class="cats 0<1->subj;pred" colspan="1">SN / Sujeto</td><td class="cats 1<1->subj;pred" colspan="2">SV / Predicado</td></tr></table></body></html>
