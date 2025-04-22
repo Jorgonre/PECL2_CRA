@@ -1,168 +1,180 @@
-:- module(main, [ menu/0 ]).
+:- module(main, [menu/0]).
 
-:- use_module(prueba_2, [oracion/4]).        % ← explicitly import your DCG
-:- use_module(draw,    [draw/1, imprimir_frase_subrayada/1]).
-:- use_module(infinitivo,          []).   % (these you always call module‑qualified)
-:- use_module(preprocesar,         []).
-:- use_module(flexion,             []).
-:- use_module(traductor,           []).
-:- use_module(draw_html, [draw_html/2]).      % para generar HTML con el subrayado
+:- use_module(library(csv)).
+:- use_module(library(http/http_client)).
+:- use_module(library(http/json)).
 
+% Cargamos solo el Google Translator
+:- ensure_loaded('traductorGoogle.pl').
 
+:- use_module(prueba_2,    [oracion/4]).
+:- use_module(draw,        [draw/1]).
+:- use_module(draw_html,   [draw_html/2]).
+:- use_module(preprocesar, []).
 
+:- dynamic current_lang/1.
+:- dynamic current_phrase/1.
 
-% --------------------------------------------------------------
-%   LISTAS “ABIERTAS”  →  LISTAS NORMALES
-% --------------------------------------------------------------
-% close_list(+QuizáListaAbierta, -ListaCerrada)
-close_list(Var,              []) :- var(Var), !.
-close_list([],               []).
-close_list([H|T], [H|Rest]) :- close_list(T, Rest).
+%% Punto de entrada
+menu :-
+    choose_phrase,
+    menu_loop.
 
-% normalise_trees(+Raw, -ListaArboles)
-%   • Raw ya es lista  -> la cierra por la cola.
-%   • Raw es un árbol  -> lo mete en lista unitaria.
-normalise_trees(Raw, List) :-
-    (   Raw = [_|_] -> close_list(Raw, List)
-    ;   List = [Raw]
+%% Elegir frase: manual o CSV
+choose_phrase :-
+    nl, writeln('?Como desea introducir la frase?'),
+    writeln('  1) Manual'),
+    writeln('  2) Desde frases.csv'),
+    write('Opcion: '), read_choice(Op),
+    ( Op =:= 1 ->
+        prompt_language,
+        ask_sentence('Frase', P)
+    ; Op =:= 2 ->
+        load_csv_phrases(Rows),
+        select_csv_phrase(Rows,P),
+        retractall(current_lang(_)),
+        assertz(current_lang(en))
+    ; writeln('Opcion invalida.'), choose_phrase
+    ),
+    retractall(current_phrase(_)),
+    assertz(current_phrase(P)).
+
+load_csv_phrases(Rows) :-
+    csv_read_file('frases.csv', Rows, [functor(frase), arity(3), separator(0';)]),
+    forall(member(frase(_,Id,Atom), Rows),
+           ( atom_string(Atom,Txt),
+             format('~w) ~w~n',[Id,Txt])
+           )).
+
+select_csv_phrase(Rows, P) :-
+    write('Numero de frase: '), read_choice(Id2),
+    member(frase(_,Id2,Atom2), Rows),
+    atom_string(Atom2,P).
+
+prompt_language :-
+    writeln('?Idioma de la frase?'),
+    writeln('  1) English'),
+    writeln('  2) Espanol'),
+    write('Opcion: '), read_choice(L),
+    ( L =:= 1 -> Lang = en
+    ; L =:= 2 -> Lang = es
+    ; writeln('Opcion invalida.'), prompt_language
+    ),
+    retractall(current_lang(_)),
+    assertz(current_lang(Lang)).
+
+%% Bucle principal: enumera opciones 1..N y no sale hasta elegir Salir
+menu_loop :-
+    repeat,
+      current_lang(L), current_phrase(P),
+      format('\nFrase actual (~w): ~s~n',[L,P]),
+      findall(Label, menu_item(L,Label,_), Labels),
+      findall(Code,  menu_item(L,_,Code),  Codes),
+      print_menu_items(Labels,1),
+      write('Seleccione opcion: '), read_choice(Idx),
+      ( nth1(Idx,Codes,Code)
+      -> ( Code == exit -> !
+         ; perform(Code), fail
+         )
+      ; writeln('Opcion no valida.'), fail
+      ).
+
+menu_item(es, 'Preprocesar Espanol',    pre_es).
+menu_item(es, 'Traducir ES->EN',         trans_es_en).
+
+menu_item(en, 'Preprocesar English',     pre_en).
+menu_item(en, 'Traducir EN->ES',         trans_en_es).
+
+menu_item(_,  'Analisis sintactico',     analysis).
+menu_item(_,  'Cambiar frase',           change).
+menu_item(_,  'Salir',                   exit).
+
+print_menu_items([],_) :- !.
+print_menu_items([L|Ls],N) :-
+    format(' ~w) ~w~n',[N,L]),
+    N1 is N+1,
+    print_menu_items(Ls,N1).
+
+perform(pre_es)      :- process_pre_es.
+perform(trans_es_en) :- process_trans_es_en.
+
+perform(pre_en)      :- process_pre_en.
+perform(trans_en_es) :- process_trans_en_es.
+
+perform(analysis)    :- do_analysis.
+perform(change)      :- choose_phrase.
+perform(exit).
+
+%% Procesos básicos
+process_pre_es :-
+    current_phrase(P),
+    preprocesar:preprocesar_es(P,Ts),
+    format('Tokens ES: ~w~n',[Ts]).
+process_pre_en :-
+    current_phrase(P),
+    preprocesar:preprocesar_en(P,Ts),
+    format('Tokens EN: ~w~n',[Ts]).
+
+process_trans_es_en :-
+    current_phrase(P),
+    translate_free(P, es, en, Out),
+    format('ES->EN: ~s~n',[Out]).
+process_trans_en_es :-
+    current_phrase(P),
+    translate_free(P, en, es, Out),
+    format('EN->ES: ~s~n',[Out]).
+
+%% Análisis sintáctico traduciendo primero si es necesario
+do_analysis :-
+    current_lang(L0), current_phrase(P0),
+    ( L0 = es ->
+        translate_free(P0, es, en, P)
+    ; P = P0
+    ),
+    preprocesar:preprocesar_en(P, Toks),
+    ( prueba_2:oracion(eng,Raw0,Toks,[]) ->
+        ( Raw0 = [F|_] -> Flat = F ; Flat = Raw0 ),
+        normalise_trees(Flat,Trees),
+        analysis_menu(Trees)
+    ; writeln('No se pudo analizar.')
     ).
 
-% -------------------------------------------------------------------
-%  Sub‑menú para los árboles analizados
-% -------------------------------------------------------------------
 analysis_menu(Trees) :-
     repeat,
-        nl, writeln('======= ANALISIS ======='),
-        writeln(' 1) Dibujar arbol'),
-        writeln(' 2) Imprimir analisis subrayado'),
-        writeln(' 0) Volver al menu principal'), nl,
-        prompt_choice(Opt),
-        (   Opt == 0
-        ->  !                                  %  salir del repeat
-        ;   run_analysis_option(Opt, Trees),
-            fail                               %  volver a mostrar sub‑menú
-        ).
+      writeln('------ ANALISIS ------'),
+      writeln(' 1) Mostrar arbol ASCII'),
+      writeln(' 2) Generar HTML subrayado'),
+      writeln(' 0) Volver'),
+      write('Opcion: '), read_choice(Op),
+      ( Op =:= 0 -> !
+      ; run_analysis_option(Op,Trees), fail
+      ).
 
-run_analysis_option(1, Trees) :-               % dibujar
-    forall(member(T, Trees),
-          ( nl, draw:draw(T), nl )).
-          
-run_analysis_option(2, Trees) :-
-    forall(
-        nth1(I, Trees, Tree),
-        (
-            format('Generando árbol subrayado #~w…~n', [I]),
-            format(atom(Base), 'analisis_subrayado_~w', [I]),
-            draw_html:draw_html(Tree, Base)
-        )
+run_analysis_option(1,Trees) :-
+    forall(member(T,Trees),
+      ( nl, draw:draw(T), nl )
+    ).
+run_analysis_option(2,Trees) :-
+    forall(nth1(I,Trees,T),
+      ( format('Generando subrayado_~w.html...~n',[I]),
+        format(atom(Base),'subrayado_~w',[I]),
+        draw_html:draw_html(T,Base)
+      )
+    ).
+run_analysis_option(_,_) :-
+    writeln('Opcion no valida.').
+
+%% Lectura robusta de elección numérica
+read_choice(N) :-
+    read_line_to_string(user_input,S),
+    ( number_string(N,S) -> true
+    ; writeln('Entrada invalida, ingrese un numero.'), read_choice(N)
     ).
 
+ask_sentence(Prompt,S) :-
+    format('~w:~n> ',[Prompt]),
+    read_line_to_string(user_input,S0),
+    normalize_space(string(S),S0).
 
-run_analysis_option(_, _) :-
-    writeln('Opcion no reconocida, intente de nuevo.').
-
-
-% -----------------------------------------------------------------------------
-% PÚBLICO: menu/0 –  bucle interactivo
-% -----------------------------------------------------------------------------
-menu :-
-    repeat,
-        nl, writeln('===========  MENU PRINCIPAL  ==========='),
-        writeln(' 1) Preprocesar frase en  ESPANOL'),
-        writeln(' 2) Preprocesar frase en  INGLES'),
-        writeln(' 3) Plurales & singulares   (ES)'),
-        writeln(' 4) Plurals & singulars     (EN)'),
-        writeln(' 5) Traducir frase ES -> EN'),
-        writeln(' 6) Traducir frase EN -> ES'),
-        writeln(' 7) Analizar & dibujar arbol de oracion inglesa'),
-        writeln(' 0) Salir'), nl,
-        prompt_choice(Choice),
-        process_choice(Choice),
-    Choice == 0, !.
-
-% -----------------------------------------------------------------------------
-% Entrada de la opción (entero)
-% -----------------------------------------------------------------------------
-prompt_choice(N) :-
-    write('Seleccione opcion: '),
-    read_line_to_string(user_input,S),
-    catch(number_string(N,S),_,(writeln('Introduzca un numero valido.'), fail)).
-
-% -----------------------------------------------------------------------------
-% Procesamiento de cada opción
-% -----------------------------------------------------------------------------
-process_choice(0) :- writeln('Hasta la proxima!').
-
-% 1) Preprocesar frase ES -------------------------------------------------------
-process_choice(1) :-
-    ask_sentence('Frase en espanol', In),
-    preprocesar:preprocesar_es(In, Toks),
-    format('Tokens: ~w~n', [Toks]), fail,
-    !, fail.
-
-% 2) Preprocesar frase EN -------------------------------------------------------
-process_choice(2) :-
-    ask_sentence('Sentence in English', In),
-    preprocesar:preprocesar_en(In, Toks),
-    format('Tokens: ~w~n', [Toks]), fail,
-    !, fail.
-
-% 3) Plural/Singular ES --------------------------------------------------------
-process_choice(3) :-
-    ask_atom('Palabra espanola', Word),
-    flexion:pluralize(Word, Pl), flexion:singularize(Pl, Sing),
-    format('Plural: ~w  |  Singular: ~w~n',[Pl,Sing]),
-    !, fail.
-
-% 4) Plural/Singular EN --------------------------------------------------------
-process_choice(4) :-
-    ask_atom('English word', Word),
-    flexion:pluralize_en(Word, Pl), flexion:singularize_en(Pl, Sing),
-    format('Plural: ~w  |  Singular: ~w~n',[Pl,Sing]),
-    !, fail.
-
-% 5) ES ➜ EN -------------------------------------------------------------------
-process_choice(5) :-                       % ES ➜ EN
-    ask_sentence('Frase en español', In),
-    traductor:traducir_frase_es_en(In, Out),
-    format('Traducción: ~s~n', [Out]),
-    !,                                    % ← corta cualquier retroceso
-    fail.                                 % ← fuerza volver al menú
-
-% 6) EN ➜ ES ------------------------------------------------------------------
-process_choice(6) :-
-    ask_sentence('Sentence in English', In),
-    traductor:traducir_frase_en_es(In, Out),
-    format('Traduccion: ~s~n', [Out]), fail,
-    !, fail.
-
-% 7) Analizar + Dibujar árbol ---------------------------------------
-process_choice(7) :-
-    ask_sentence('Sentence in English', In),
-    preprocesar:preprocesar_en(In, Toks),
-    (   prueba_2:oracion(eng, Raw0, Toks, [])  % <-- llamada al DCG
-    ->  (   Raw0 = [First|_] ,
-            is_list(First)
-        ->  Flat = First
-        ;   Flat = Raw0
-        ),
-        normalise_trees(Flat, Trees),
-        analysis_menu(Trees)
-    ;   writeln('No se pudo analizar con la gramatica.')
-    ),
-    !, fail.
-
-% -----------------------------------------------------------------------------
-% UTILIDADES de entrada de texto/átomos
-% -----------------------------------------------------------------------------
-ask_sentence(Prompt, Sentence) :-
-    format('~w:~n> ', [Prompt]),
-    read_line_to_string(user_input, SentenceRaw),
-    normalize_space(string(Sentence), SentenceRaw).
-
-ask_string(Prompt, Str) :-
-    format('~w: ', [Prompt]),
-    read_line_to_string(user_input, Str).
-
-ask_atom(Prompt, Atom) :-
-    ask_string(Prompt, Str), atom_string(Atom, Str).
+normalise_trees(Raw,List) :-
+    ( Raw = [_|_] -> List = Raw ; List = [Raw] ).
