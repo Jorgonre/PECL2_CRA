@@ -402,6 +402,15 @@ imprimir_frase(ADV) :-
           imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
+imprimir_frase(PREP) :-
+        ( PREP = gp(Izq)
+        ->  imprimir_frase(Izq) % Nodo adverbio
+        ; functor(PREP, gp, Arity), Arity > 1, 
+          arg(1, PREP, Izq), % Obtener el primer hijo
+          gv_sin_primero(PREP, Resto), % Obtener los demás hijos
+          imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
 imprimir_frase(SUJ) :- 
         ( SUJ = gn(Izq)
         ->  imprimir_frase(Izq) % Nodo frase verbal
@@ -417,6 +426,51 @@ imprimir_frase(PRED) :-
         ; functor(PRED, gv, Arity), Arity > 1, 
           arg(1, PRED, Izq), % Obtener el primer hijo
           gv_sin_primero(PRED, Resto), % Obtener los demás hijos
+          imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_frase(CD) :- 
+        ( CD = cd(Izq)
+        ->  imprimir_frase(Izq) % Nodo frase verbal
+        ; functor(CD, cd, Arity), Arity > 1, 
+          arg(1, CD, Izq), % Obtener el primer hijo
+          gv_sin_primero(CD, Resto), % Obtener los demás hijos
+          imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_frase(CI) :- 
+        ( CI = ci(Izq)
+        ->  imprimir_frase(Izq) % Nodo frase verbal
+        ; functor(CI, ci, Arity), Arity > 1, 
+          arg(1, CI, Izq), % Obtener el primer hijo
+          gv_sin_primero(CI, Resto), % Obtener los demás hijos
+          imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_frase(CCM) :- 
+        ( CCM = ccm(Izq)
+        ->  imprimir_frase(Izq) % Nodo frase verbal
+        ; functor(CCM, ccm, Arity), Arity > 1, 
+          arg(1, CCM, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCM, Resto), % Obtener los demás hijos
+          imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_frase(CCL) :- 
+        ( CCL = ccl(Izq)
+        ->  imprimir_frase(Izq) % Nodo frase verbal
+        ; functor(CCL, ccl, Arity), Arity > 1, 
+          arg(1, CCL, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCL, Resto), % Obtener los demás hijos
+          imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_frase(CCT) :- 
+        ( CCT = cct(Izq)
+        ->  imprimir_frase(Izq) % Nodo frase verbal
+        ; functor(CCT, cct, Arity), Arity > 1, 
+          arg(1, CCT, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCT, Resto), % Obtener los demás hijos
           imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
@@ -476,6 +530,17 @@ calcular_longitud_frase(ADV, Longitud) :-
                 Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
         ).
 
+calcular_longitud_frase(PREP, Longitud) :-
+        (   PREP = gp(Izq) % Si solo hay un hijo
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo adverbio
+        ;   functor(PREP, gp, Arity), Arity > 1 ->
+                arg(1, PREP, Izq), % Obtener el primer hijo
+                gv_sin_primero(PREP, Resto), % Obtener los demás hijos
+                calcular_longitud_frase(Izq, LongIzq),
+                calcular_longitud_frase(Resto, LongResto),
+                Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
+        ).
+
 calcular_longitud_frase(SUJ, Longitud) :-
         (   SUJ = gn(Izq) % Si solo hay un hijo
         ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase nominal
@@ -498,23 +563,60 @@ calcular_longitud_frase(PRED, Longitud) :-
                 Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
         ).
 
-% contar_palabras(+Árbol, -N)
-%   N es el número de hojas (palabras) en Árbol.
-contar_palabras(T, N) :-
-    T =.. [_Functor|Args],
-    (   Args = []                  % caso terminal: no hay hijos
-    ->  N = 1                     % cada nodo terminal cuenta como 1 palabra
-    ;   maplist(contar_palabras, Args, Ns),
-        sum_list(Ns, N)
-    ).
+calcular_longitud_frase(CD, Longitud) :-
+        (   CD = cd(Izq) % Si solo hay un hijo
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase verbal
+        ;   functor(CD, cd, Arity), Arity > 1 ->
+                arg(1, CD, Izq), % Obtener el primer hijo
+                gv_sin_primero(CD, Resto), % Obtener los demás hijos
+                calcular_longitud_frase(Izq, LongIzq),
+                calcular_longitud_frase(Resto, LongResto),
+                Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
+        ).
 
-% contar_sujeto_predicado(+Oración, -N_suj, -N_pred)
-%   Oración debe tener forma o(FraseNominal, FraseVerbal)
-%   N_suj es el nº de palabras en la FraseNominal,
-%   N_pred en la FraseVerbal.
-contar_sujeto_predicado(o(GN, GV), Nsuj, Npred) :-
-    contar_palabras(GN, Nsuj),
-    contar_palabras(GV, Npred).
+calcular_longitud_frase(CI, Longitud) :-
+        (   CI = ci(Izq) % Si solo hay un hijo
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase verbal
+        ;   functor(CI, ci, Arity), Arity > 1 ->
+                arg(1, CI, Izq), % Obtener el primer hijo
+                gv_sin_primero(CI, Resto), % Obtener los demás hijos
+                calcular_longitud_frase(Izq, LongIzq),
+                calcular_longitud_frase(Resto, LongResto),
+                Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
+        ).
+
+calcular_longitud_frase(CCM, Longitud) :-
+        (   CCM = ccm(Izq) % Si solo hay un hijo
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase verbal
+        ;   functor(CCM, ccm, Arity), Arity > 1 ->
+                arg(1, CCM, Izq), % Obtener el primer hijo
+                gv_sin_primero(CCM, Resto), % Obtener los demás hijos
+                calcular_longitud_frase(Izq, LongIzq),
+                calcular_longitud_frase(Resto, LongResto),
+                Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
+        ).
+
+calcular_longitud_frase(CCL, Longitud) :-
+        (   CCL = ccl(Izq) % Si solo hay un hijo
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase verbal
+        ;   functor(CCL, ccl, Arity), Arity > 1 ->
+                arg(1, CCL, Izq), % Obtener el primer hijo
+                gv_sin_primero(CCL, Resto), % Obtener los demás hijos
+                calcular_longitud_frase(Izq, LongIzq),
+                calcular_longitud_frase(Resto, LongResto),
+                Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
+        ).
+
+calcular_longitud_frase(CCT, Longitud) :-
+        (   CCT = cct(Izq) % Si solo hay un hijo
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase verbal
+        ;   functor(CCT, cct, Arity), Arity > 1 ->
+                arg(1, CCT, Izq), % Obtener el primer hijo
+                gv_sin_primero(CCT, Resto), % Obtener los demás hijos
+                calcular_longitud_frase(Izq, LongIzq),
+                calcular_longitud_frase(Resto, LongResto),
+                Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
+        ).
 
 % Subraya cada una de las hojas de un árbol
 
@@ -574,6 +676,15 @@ imprimir_palabra_subrayada(ADV) :-
           imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
+imprimir_palabra_subrayada(PREP) :-
+        ( PREP = gp(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo adverbio
+        ; functor(PREP, gp, Arity), Arity > 1, 
+          arg(1, PREP, Izq), % Obtener el primer hijo
+          gv_sin_primero(PREP, Resto), % Obtener los demás hijos
+          imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
 imprimir_palabra_subrayada(SUJ) :- 
         ( SUJ = gn(Izq)
         ->  imprimir_palabra_subrayada(Izq) % Nodo frase nominal
@@ -592,6 +703,50 @@ imprimir_palabra_subrayada(PRED) :-
           imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
+imprimir_palabra_subrayada(CD) :- 
+        ( CD = cd(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo frase verbal
+        ; functor(CD, cd, Arity), Arity > 1, 
+          arg(1, CD, Izq), % Obtener el primer hijo
+          gv_sin_primero(CD, Resto), % Obtener los demás hijos
+          imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_palabra_subrayada(CI) :- 
+        ( CI = ci(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo frase verbal
+        ; functor(CI, ci, Arity), Arity > 1, 
+          arg(1, CI, Izq), % Obtener el primer hijo
+          gv_sin_primero(CI, Resto), % Obtener los demás hijos
+          imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_palabra_subrayada(CCM) :- 
+        ( CCM = ccm(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo frase verbal
+        ; functor(CCM, ccm, Arity), Arity > 1, 
+          arg(1, CCM, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCM, Resto), % Obtener los demás hijos
+          imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_palabra_subrayada(CCL) :- 
+        ( CCL = ccl(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo frase verbal
+        ; functor(CCL, ccl, Arity), Arity > 1, 
+          arg(1, CCL, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCL, Resto), % Obtener los demás hijos
+          imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_palabra_subrayada(CCT) :- 
+        ( CCT = cct(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo frase verbal
+        ; functor(CCT, cct, Arity), Arity > 1, 
+          arg(1, CCT, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCT, Resto), % Obtener los demás hijos
+          imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
 
 % Imprime solo la etiqueta centrada debajo de los guiones para un determinante
 imprimir_etiqueta_centrada(det(Palabra)) :- 
@@ -600,7 +755,7 @@ imprimir_etiqueta_centrada(det(Palabra)) :-
 
 imprimir_etiqueta_centrada(n_p(Palabra)) :- 
         calcular_longitud_frase(n_p(Palabra), Longitud),
-        centrar_etiqueta('np', Longitud).
+        centrar_etiqueta('N', Longitud).
 
 % Imprime solo la etiqueta centrada debajo de los guiones para un sustantivo
 imprimir_etiqueta_centrada(n(Palabra)) :- 
@@ -619,15 +774,15 @@ imprimir_etiqueta_centrada(prep(Palabra)) :-
 
 imprimir_etiqueta_centrada(adj(Palabra)) :- 
         calcular_longitud_frase(adj(Palabra), Longitud),
-        centrar_etiqueta('adj', Longitud).
+        centrar_etiqueta('a', Longitud).
 
 imprimir_etiqueta_centrada(adv(Palabra)) :- 
         calcular_longitud_frase(adv(Palabra), Longitud),
-        centrar_etiqueta('adv', Longitud).
+        centrar_etiqueta('A', Longitud).
 
 % Imprime las etiquetas centradas para una oración
 imprimir_etiqueta_centrada(o(GN, GV)) :- 
-        imprimir_etiqueta_centrada(GN), write(' '), imprimir_etiqueta_centrada(GV).
+        imprimir_etiqueta_centrada(GN), wspaces(1), imprimir_etiqueta_centrada(GV).
 
 imprimir_etiqueta_centrada(ADJ) :-
         ( ADJ = gadj(Izq)
@@ -635,7 +790,7 @@ imprimir_etiqueta_centrada(ADJ) :-
         ; functor(ADJ, gadj, Arity), Arity > 1, 
           arg(1, ADJ, Izq), % Obtener el primer hijo
           gv_sin_primero(ADJ, Resto), % Obtener los demás hijos
-          imprimir_etiqueta_centrada(Izq), write(' '), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+          imprimir_etiqueta_centrada(Izq), wspaces(1), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
 imprimir_etiqueta_centrada(ADV) :-
@@ -644,7 +799,16 @@ imprimir_etiqueta_centrada(ADV) :-
         ; functor(ADV, gadv, Arity), Arity > 1, 
           arg(1, ADV, Izq), % Obtener el primer hijo
           gv_sin_primero(ADV, Resto), % Obtener los demás hijos
-          imprimir_etiqueta_centrada(Izq), write(' '), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+          imprimir_etiqueta_centrada(Izq), wspaces(1), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_etiqueta_centrada(PREP) :-
+        ( PREP = gp(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo adverbio
+        ; functor(PREP, gp, Arity), Arity > 1, 
+          arg(1, PREP, Izq), % Obtener el primer hijo
+          gv_sin_primero(PREP, Resto), % Obtener los demás hijos
+          imprimir_etiqueta_centrada(Izq), wspaces(1), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
 imprimir_etiqueta_centrada(SUJ) :- 
@@ -653,7 +817,7 @@ imprimir_etiqueta_centrada(SUJ) :-
         ; functor(SUJ, gn, Arity), Arity > 1, 
           arg(1, SUJ, Izq), % Obtener el primer hijo
           gv_sin_primero(SUJ, Resto), % Obtener los demás hijos
-          imprimir_etiqueta_centrada(Izq), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+          imprimir_etiqueta_centrada(Izq), wspaces(1), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
 imprimir_etiqueta_centrada(PRED) :- 
@@ -662,9 +826,53 @@ imprimir_etiqueta_centrada(PRED) :-
         ; functor(PRED, gv, Arity), Arity > 1, 
           arg(1, PRED, Izq), % Obtener el primer hijo
           gv_sin_primero(PRED, Resto), % Obtener los demás hijos
+          imprimir_etiqueta_centrada(Izq), wspaces(1), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_etiqueta_centrada(CD) :- 
+        ( CD = cd(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo frase verbal
+        ; functor(CD, cd, Arity), Arity > 1, 
+          arg(1, CD, Izq), % Obtener el primer hijo
+          gv_sin_primero(CD, Resto), % Obtener los demás hijos
           imprimir_etiqueta_centrada(Izq), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
         ).
 
+imprimir_etiqueta_centrada(CI) :- 
+        ( CI = ci(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo frase verbal
+        ; functor(CI, ci, Arity), Arity > 1, 
+          arg(1, CI, Izq), % Obtener el primer hijo
+          gv_sin_primero(CI, Resto), % Obtener los demás hijos
+          imprimir_etiqueta_centrada(Izq), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_etiqueta_centrada(CCM) :- 
+        ( CCM = ccm(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo frase verbal
+        ; functor(CCM, ccm, Arity), Arity > 1, 
+          arg(1, CCM, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCM, Resto), % Obtener los demás hijos
+          imprimir_etiqueta_centrada(Izq), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_etiqueta_centrada(CCL) :- 
+        ( CCL = ccl(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo frase verbal
+        ; functor(CCL, ccm, Arity), Arity > 1, 
+          arg(1, CCL, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCL, Resto), % Obtener los demás hijos
+          imprimir_etiqueta_centrada(Izq), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
+
+imprimir_etiqueta_centrada(CCT) :- 
+        ( CCT = cct(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo frase verbal
+        ; functor(CCT, cct, Arity), Arity > 1, 
+          arg(1, CCT, Izq), % Obtener el primer hijo
+          gv_sin_primero(CCT, Resto), % Obtener los demás hijos
+          imprimir_etiqueta_centrada(Izq), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
+        ).
 
 % Centra la etiqueta debajo de los guiones
 centrar_etiqueta(Etiqueta, Longitud) :-
@@ -685,67 +893,151 @@ imprimir_etiqueta_suj_y_pred(o(GN,GV)) :-
 
 
 % Subraya el complemento directo (gn dentro de gv)
-imprimir_complemento_directo_subrayado(o(Suj, gv(Verb, GN))) :-
+imprimir_complementos_subrayados(o(Suj, GV)) :-
         calcular_longitud_frase(Suj, Espacios),
         wspaces(Espacios + 1), % Imprime los espacios necesarios
-        calcular_longitud_frase(Verb, EspaciosVerb),
-        wspaces(EspaciosVerb + 1), % Imprime los espacios necesarios
-        calcular_longitud_frase(GN, Longitud),
-        dashes(Longitud, [], Guiones), % Genera los guiones
-        prt(Guiones). % Imprime los guiones y un salto de línea
+        functor(GV, gv, Arity), % Obtiene la aridad del término
+        Arity > 1, % Asegúrate de que haya mas de un hijo
+        imprimir_complementos_subrayados_aux(1, GV, Arity). % Llama a la función auxiliar para imprimir el complemento directo
+
+imprimir_complementos_subrayados_aux(Pos, Termino, Arity) :-
+        Pos =< Arity, % Verifica si la posición es válida
+        arg(Pos, Termino, Arg), % Obtiene el verbo
+        calcular_longitud_frase(Arg, Longitud),
+        (functor(Arg, cd, _)
+        ->  calcular_longitud_frase(Arg, LongitudCD), %Calcula la longitud completa del cd
+            dashes(LongitudCD, [], Guiones), % Genera los guiones
+            prt(Guiones), % Imprime los guiones y un salto de línea
+            wspaces(1) % Imprime un espacio
+        ;   % Si no es un complemento directo, comprueba si es indirecto
+        (   functor(Arg, ci, _)
+        ->  calcular_longitud_frase(Arg, LongitudCI), %Calcula la longitud completa del ci
+            dashes(LongitudCI, [], Guiones), % Genera los guiones
+            prt(Guiones), % Imprime los guiones y un salto de línea
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, ci, _) -> dashes(1, [], GuionesAux), % Genera los guiones
+            prt(GuionesAux) % Imprime los guiones y un salto de línea
+            ;wspaces(1)) % Imprime un espacio
+        ;   % Si no es un complemento indirecto, comprueba si es circunstancial
+        (   functor(Arg, ccm, _)
+        ->  calcular_longitud_frase(Arg, LongitudCCM), %Calcula la longitud completa del circunstancial
+            dashes(LongitudCCM, [], Guiones), % Genera los guiones
+            prt(Guiones), % Imprime los guiones y un salto de línea
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, ccm, _) -> dashes(1, [], GuionesAux), % Genera los guiones
+            prt(GuionesAux) % Imprime los guiones y un salto de línea
+            ;wspaces(1)) % Imprime un espacio
+        ;   % Si no es un complemento circunstancial, comprueba si es de lugar
+        (   functor(Arg, ccl, _)
+        ->  calcular_longitud_frase(Arg, LongitudCCL), %Calcula la longitud completa del circunstancial
+            dashes(LongitudCCL, [], Guiones), % Genera los guiones
+            prt(Guiones), % Imprime los guiones y un salto de línea
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, ccl, _) -> dashes(1, [], GuionesAux), % Genera los guiones
+            prt(GuionesAux) % Imprime los guiones y un salto de línea
+            ;wspaces(1)) % Imprime un espacio
+        ;   % Si no es un complemento de lugar, comprueba si es de tiempo
+        (   functor(Arg, cct, _)
+        ->  calcular_longitud_frase(Arg, LongitudCCT), %Calcula la longitud completa del circunstancial
+            dashes(LongitudCCT, [], Guiones), % Genera los guiones
+            prt(Guiones), % Imprime los guiones y un salto de línea
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, cct, _) -> dashes(1, [], GuionesAux), % Genera los guiones
+            prt(GuionesAux) % Imprime los guiones y un salto de línea
+            ;wspaces(1)) % Imprime un espacio
+        ;   % Si no es un complemento circunstancial, continúa con el siguiente hijo
+            calcular_longitud_frase(Arg, Longitud),
+            LongitudN is Longitud + 1,
+            wspaces(LongitudN) % Imprime los espacios necesarios   
+        ))))),
+        Pos1 is Pos + 1,
+        (Pos == Arity -> true ;
+        imprimir_complementos_subrayados_aux(Pos1, Termino, Arity)).
 
 % Subraya el complemento directo (gn dentro de gv)
-imprimir_complemento_indirecto_subrayado(o(Suj, gv(Verb, PREP, GN))) :-
+imprimir_etiqueta_complementos(o(Suj, GV)) :-
         calcular_longitud_frase(Suj, Espacios),
         wspaces(Espacios + 1), % Imprime los espacios necesarios
-        calcular_longitud_frase(Verb, EspaciosVerb),
-        wspaces(EspaciosVerb + 1), % Imprime los espacios necesarios
-        calcular_longitud_frase(GN, LongitudGN),
-        calcular_longitud_frase(PREP, LongitudPrep),
-        Longitud is LongitudGN + LongitudPrep + 1, % Suma 1 por el espacio entre la preposición y el complemento
-        dashes(Longitud, [], Guiones), % Genera los guiones
-        prt(Guiones). % Imprime los guiones y un salto de línea
+        functor(GV, gv, Arity), % Obtiene la aridad del término
+        Arity > 1, % Asegúrate de que haya mas de un hijo
+        imprimir_etiqueta_complementos_aux(1, GV, Arity). % Llama a la función auxiliar para imprimir el complemento directo
 
-%Imprimir la etiqueta de los complementos
-imprimir_etiqueta_de_complemento_directo(o(Suj, gv(Verb, GN))) :-
-        calcular_longitud_frase(Suj, EspaciosSuj),
-        calcular_longitud_frase(Verb, EspaciosVerb),
-        calcular_longitud_frase(GN, Longitud),
-        Espacios is EspaciosSuj + EspaciosVerb + 1, % Calcula la longitud total
-        wspaces(Espacios), % Imprime los espacios necesarios
-        % Imprime la etiqueta centrada debajo de los guiones
-        centrar_etiqueta('CD', Longitud). % Imprime la etiqueta centrada debajo de los guiones
+imprimir_etiqueta_complementos_aux(Pos, Termino, Arity) :-
+        Pos =< Arity, % Verifica si la posición es válida
+        arg(Pos, Termino, Arg), % Obtiene el verbo
+        calcular_longitud_frase(Arg, Longitud),
+        (functor(Arg, cd, _)
+        ->  calcular_longitud_frase(Arg, LongitudCD), %Calcula la longitud completa del cd
+            centrar_etiqueta('CD',LongitudCD), %Imprime la etiqueta centrada
+            PosN is Pos,
+            wspaces(1) % Imprime un espacio
+        ;   % Si no es un complemento directo, comprueba si es indirecto
+        (   functor(Arg, ci, _)
+        ->  calcular_longitud_frase(Arg, LongitudCI1), %Calcula la longitud completa del ci
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, ci, _) -> calcular_longitud_frase(ArgAux, LongitudCI2), %Calcula la longitud completa del ci
+            LongitudCI is LongitudCI1 + LongitudCI2 %Suma la longitud del complemento indirecto
+            ;LongitudCI is LongitudCI1, %Si no hay complemento indirecto, se queda con la longitud del complemento directo
+            wspaces(1)), % Imprime un espacio
+            PosPrev is Pos - 1,
+            arg(PosPrev,Termino,ArgPrev),
+            (functor(ArgPrev, ci, _)
+            ;centrar_etiqueta('CI', LongitudCI)) %Imprime la etiqueta centrada
+        ;   % Si no es un complemento indirecto, comprueba si es circunstancial
+        (   functor(Arg, ccm, _)
+        ->  calcular_longitud_frase(Arg, LongitudCCM1), %Calcula la longitud completa del circunstancial
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, ccm, _) -> calcular_longitud_frase(ArgAux, LongitudCCM2), %Calcula la longitud completa del circunstancial
+            LongitudCCM is LongitudCCM1 + LongitudCCM2 %Suma la longitud del complemento circunstancial
+            ;LongitudCCM is LongitudCCM1, %Si no hay complemento circunstancial, se queda con la longitud del complemento circunstancial
+            wspaces(1)), % Imprime un espacio
+            PosPrev is Pos - 1,
+            arg(PosPrev,Termino,ArgPrev),
+            (functor(ArgPrev, ccm, _)
+            ;centrar_etiqueta('CCM', LongitudCCM)) %Imprime la etiqueta centrada
+        ;   % Si no es un complemento circunstancial, comprueba si es de lugar
+        (   functor(Arg, ccl, _)
+        ->  calcular_longitud_frase(Arg, LongitudCCL1), %Calcula la longitud completa del circunstancial
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, ccl, _) -> calcular_longitud_frase(ArgAux, LongitudCCL2), %Calcula la longitud completa del circunstancial
+            LongitudCCL is LongitudCCL1 + LongitudCCL2 %Suma la longitud del complemento circunstancial
+            ;LongitudCCL is LongitudCCL1, %Si no hay complemento circunstancial, se queda con la longitud del complemento circunstancial
+            wspaces(1)), % Imprime un espacio
+            PosPrev is Pos - 1,
+            arg(PosPrev,Termino,ArgPrev),
+            (functor(ArgPrev, ccl, _)
+            ;centrar_etiqueta('CCL', LongitudCCL)) %Imprime la etiqueta centrada
+        ;   % Si no es un complemento de lugar, comprueba si es de tiempo
+        (   functor(Arg, cct, _)
+        ->  calcular_longitud_frase(Arg, LongitudCCT1), %Calcula la longitud completa del circunstancial
+            PosN is Pos + 1,
+            (arg(PosN,Termino,ArgAux),
+            functor(ArgAux, cct, _) -> calcular_longitud_frase(ArgAux, LongitudCCT2), %Calcula la longitud completa del circunstancial
+            LongitudCCT is LongitudCCT1 + LongitudCCT2 %Suma la longitud del complemento circunstancial
+            ;LongitudCCT is LongitudCCT1, %Si no hay complemento circunstancial, se queda con la longitud del complemento circunstancial
+            wspaces(1)), % Imprime un espacio
+            PosPrev is Pos - 1,
+            arg(PosPrev,Termino,ArgPrev),
+            (functor(ArgPrev, cct, _)
+            ;centrar_etiqueta('CCT', LongitudCCT)) %Imprime la etiqueta centrada
+        ;   % Si no es un complemento circunstancial, continúa con el siguiente hijo
+            calcular_longitud_frase(Arg, Longitud),
+            LongitudN is Longitud + 1,
+            wspaces(LongitudN) % Imprime los espacios necesarios   
+        ))))),
+        Pos1 is Pos + 1,
+        (Pos == Arity -> true ;
+        imprimir_etiqueta_complementos_aux(Pos1, Termino, Arity)).
 
-imprimir_etiqueta_de_complemento_indirecto(o(Suj, gv(Verb, PREP, GN))) :-
-        calcular_longitud_frase(Suj, EspaciosSuj),
-        calcular_longitud_frase(Verb, EspaciosVerb),
-        calcular_longitud_frase(GN, LongitudGN),
-        calcular_longitud_frase(PREP, LongitudPrep),
-        Longitud is LongitudGN + LongitudPrep + 1, % Suma 1 por el espacio entre la preposición y el complemento
-        Espacios is EspaciosSuj + EspaciosVerb + 1, % Calcula la longitud total
-        wspaces(Espacios), % Imprime los espacios necesarios
-        % Imprime la etiqueta centrada debajo de los guiones
-        centrar_etiqueta('CI', Longitud). % Imprime la etiqueta centrada debajo de los guiones
+imprimir_complementos(Arbol) :-
+        imprimir_complementos_subrayados(Arbol),
+        nl, % Salto de línea
+        imprimir_etiqueta_complementos(Arbol).
 
-%Imprime la etiqueta de los complementos seguidos, es decir, en case de que haya
-% un complemento directo y un complemento indirecto
-imprimir_complementos(o(GN, GV)) :-
-        %Imprimir subrayado del complemento directo si hay
-        (   GV = gv(Verb, GN2) ->
-            imprimir_complemento_directo_subrayado(o(GN, gv(Verb, GN2)))
-        ;   %Imprimir subrayado del complemento indirecto si hay
-            GV = gv(Verb, PREP, GN2) ->
-            imprimir_complemento_indirecto_subrayado(o(GN, gv(Verb, PREP, GN2)))
-        ;   % Si no hay complementos, no hacer nada
-            true
-        ),
-        nl,
-        % Imprimir la etiqueta de complemento directo si hay
-        (   GV = gv(Verb, GN2) ->
-            imprimir_etiqueta_de_complemento_directo(o(GN, gv(Verb, GN2)))
-        ;   % Imprimir la etiqueta de complemento indirecto si hay
-            GV = gv(Verb, PREP, GN2) ->
-            imprimir_etiqueta_de_complemento_indirecto(o(GN, gv(Verb, PREP, GN2)))
-        ;   % Si no hay complementos, no hacer nada
-            true
-        ).
