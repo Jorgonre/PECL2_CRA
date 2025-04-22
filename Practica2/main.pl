@@ -1,15 +1,12 @@
-:- module(main, [menu/0]).
+:- module(main, [ menu/0 ]).
 
-% -----------------------------------------------------------------------------
-% DEPENDENCIAS
-% -----------------------------------------------------------------------------
-:- use_module(infinitivo,          []).   % infinitivo/2, load_verbs/0
-:- use_module(preprocesar,         []).   % preprocesar_es/2, preprocesar_en/2
-:- use_module(flexion,             []).   % load_verb_db/1, conjugado/5, plural/singular helpers
-:- use_module(traductor,           []).   % load_verb_db/1 (alias), traducir_frase_es_en/2, traducir_frase_en_es/2
-:- use_module(metricas,            []).   % oracion grammar utils & draw
-:- use_module(draw,               [draw/1, imprimir_frase_subrayada/1]).
-:- use_module(prueba_2).                % gramática oracion/4, etc.
+:- use_module(prueba_2, [oracion/4]).        % ← explicitly import your DCG
+:- use_module(draw,    [draw/1, imprimir_frase_subrayada/1]).
+:- use_module(infinitivo,          []).   % (these you always call module‑qualified)
+:- use_module(preprocesar,         []).
+:- use_module(flexion,             []).
+:- use_module(traductor,           []).
+
 
 
 % --------------------------------------------------------------
@@ -47,9 +44,12 @@ analysis_menu(Trees) :-
 run_analysis_option(1, Trees) :-               % dibujar
     forall(member(T, Trees),
           ( nl, draw:draw(T), nl )).
+          
 run_analysis_option(2, Trees) :-               % análisis subrayado
-    forall(member(T, Trees),
-          ( nl, draw:imprimir_frase_subrayada(T), nl )).
+    nl,
+    draw:imprimir_frase_subrayada(Trees),
+    nl.
+
 run_analysis_option(_, _) :-
     writeln('Opcion no reconocida, intente de nuevo.').
 
@@ -132,13 +132,17 @@ process_choice(6) :-
 process_choice(7) :-
     ask_sentence('Sentence in English', In),
     preprocesar:preprocesar_en(In, Toks),
-    (   oracion(eng, Raw, Toks, [])
-    ->  normalise_trees(Raw, Trees),
-        analysis_menu(Trees)            % ← nuevo sub‑menú
+    (   prueba_2:oracion(eng, Raw0, Toks, [])  % <-- llamada al DCG
+    ->  (   Raw0 = [First|_] ,
+            is_list(First)
+        ->  Flat = First
+        ;   Flat = Raw0
+        ),
+        normalise_trees(Flat, Trees),
+        analysis_menu(Trees)
     ;   writeln('No se pudo analizar con la gramatica.')
     ),
-    !, fail.                            % volver al menú principal
-
+    !, fail.
 
 % -----------------------------------------------------------------------------
 % UTILIDADES de entrada de texto/átomos
