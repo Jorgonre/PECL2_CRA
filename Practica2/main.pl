@@ -3,7 +3,7 @@
 % Exporta el predicado menu/0 para iniciar la aplicación.
 %------------------------------------------------------------------------------%
 :- module(main, [menu/0]).
-
+:- use_module(library(csv)).
 %------------------------------------------------------------------------------%
 % Carga de dependencias externas
 % - traductorGoogle.pl: interfaz de traducción libre
@@ -25,7 +25,7 @@
 %------------------------------------------------------------------------------%
 :- dynamic current_lang/1.
 :- dynamic current_phrase/1.
-
+:- dynamic current_id/1.
 %------------------------------------------------------------------------------%
 % menu/0
 % Punto de entrada: solicita la frase y arranca el bucle de menú.
@@ -47,17 +47,23 @@ choose_phrase :-
     writeln('  2) Desde frases.csv'),
     write('Opcion: '), read_choice(Op),
     (   Op =:= 1
-    ->  prompt_language,           % pide idioma
-        ask_sentence('Frase', P)   % lee frase manual
+    ->  retractall(current_id(_)),
+        assertz(current_id(manual)),      % marcamos entrada manual
+        prompt_language,                 
+        ask_sentence('Frase', P)
     ;   Op =:= 2
-    ->  load_csv_phrases(Rows),    % carga y muestra CSV
-        select_csv_phrase(Rows, P),% selecciona frase por ID
-        retractall(current_lang(_)),% resetea idioma
-        assertz(current_lang(en))  % fija 'en' al cargar CSV
+    ->  retractall(current_id(_)),
+        load_csv_phrases(Rows),
+        write('Numero de frase: '), read_choice(Id2),
+        member(frase(Id2,Atom2), Rows),
+        atom_string(Atom2, P),
+        assertz(current_id(Id2)),         % guardamos el ID
+        retractall(current_lang(_)),
+        assertz(current_lang(en))
     ;   writeln('Opcion invalida.'), choose_phrase
     ),
-    retractall(current_phrase(_)),  % resetea frase previa
-    assertz(current_phrase(P)).     % guarda la nueva frase
+    retractall(current_phrase(_)),
+    assertz(current_phrase(P)).
 
 %------------------------------------------------------------------------------%
 % load_csv_phrases(-Rows)
@@ -75,6 +81,9 @@ load_csv_phrases(Rows) :-
         format('~w) ~w~n', [Id,Txt])
       )
     ).
+
+    
+
 
 %------------------------------------------------------------------------------%
 % select_csv_phrase(+Rows, -Phrase)
@@ -171,11 +180,19 @@ process_pre_es :-
 % process_pre_en/0: limpia comillas simples, preprocesa en inglés y muestra tokens
 %------------------------------------------------------------------------------%
 process_pre_en :-
-    current_phrase(P),
-    clean_single_quotes(P, CleanP),        % elimina comillas simples
-    preprocesar:preprocesar_en(CleanP, Ts),
-    format('Tokens EN: ~w~n', [Ts]).
-
+    current_id(Id),
+   (   Id \= manual
+    ->  % cargamos directamente los tokens preprocesados de artificial.csv
+       csv_read_file('artificial.csv', Rows, [ functor(row), arity(2), separator(0';) ]),
+        member(row(Id,AtomTokens), Rows),
+       % AtomTokens es algo así como "[ariana,',',who,has,...]"
+        format('~w;~w~n', [Id, AtomTokens])
+    ;   % caso manual: caemos en el preprocesador original
+        current_phrase(P),
+        clean_single_quotes(P, CleanP),
+        preprocesar:preprocesar_en(CleanP, Ts),
+        format('manual;~w~n', [Ts])
+    ).
 %------------------------------------------------------------------------------%
 % clean_single_quotes(+Input, -Cleaned)
 % Elimina todos los códigos 39 (') de la cadena.

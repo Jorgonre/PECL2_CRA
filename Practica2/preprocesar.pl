@@ -62,95 +62,63 @@ valid_char_es(C) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 2) PREPROCESAR EN INGLÉS   %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% Igual que en español, pero antes expande contracciones típicas del inglés.
 preprocesar_en(Sentence, Tokens) :-
-    atom_or_string_to_string(Sentence, Str),
-    string_lower(Str, Lower),
-    % 1. Expansión de contracciones ("can't" → "can not", etc.)
-    expand_contractions_en(Lower, Expanded),
-    % 2. Eliminación de puntuación 
-    remove_punctuation_en(Expanded, CleanPunct),
-    % 3. División en tokens
-    split_string(CleanPunct, " ", "", Split),
-    exclude(==( ""), Split, NonEmpty),
-    maplist(atom_string, Tokens, NonEmpty).
+    atom_or_string_to_string(Sentence, Str0),
+    string_lower(Str0, Lower0),
+    re_replace("^[0-9]+;", "", Lower0, WithoutId),
+    expand_contractions_en(WithoutId, Expanded),
+    remove_punctuation_en(Expanded, Clean),
+    split_string(Clean, " ", "", Raw0),
+    exclude(==( ""), Raw0, Raw1),
+    maplist(normalize_en_token, Raw1, Tokens).
 
-% Lista de pares (contracción, expansión) y llamado a expand_all.
-expand_contractions_en(In, Out) :-
-    ENContracciones = [
-        ("isn't",    "is not"),
-        ("aren't",   "are not"),
-        ("wasn't",   "was not"),
-        ("weren't",  "were not"),
-        ("don't",    "do not"),
-        ("doesn't",  "does not"),
-        ("didn't",   "did not"),
-        ("can't",    "can not"),
-        ("couldn't", "could not"),
-        ("shouldn't","should not"),
-        ("wouldn't", "would not"),
-        ("won't",    "will not"),
-        ("hasn't",   "has not"),
-        ("haven't",  "have not"),
-        ("hadn't",   "had not"),
-        ("mustn't",  "must not"),
-        ("i'm",      "i am"),
-        ("you're",   "you are"),
-        ("he's",     "he is"),
-        ("she's",    "she is"),
-        ("it's",     "it is"),
-        ("we're",    "we are"),
-        ("they're",  "they are"),
-        ("i've",     "i have"),
-        ("you've",   "you have"),
-        ("they've",  "they have"),
-        ("i'll",     "i will"),
-        ("you'll",   "you will"),
-        ("he'll",    "he will"),
-        ("she'll",   "she will"),
-        ("they'll",  "they will"),
-        ("i'd",      "i would"),
-        ("you'd",    "you would"),
-        ("he'd",     "he would"),
-        ("she'd",    "she would"),
-        ("they'd",   "they would"),
-        ("that's",   "that is"),
-        ("there's",  "there is")
-    ],
-    expand_all(ENContracciones, In, Out).
+% convierte tokens exactos de la forma "'C'" → "C"
+normalize_en_token(S, C) :-
+    string_chars(S, ['\'', Ch, '\'']), !,
+    string_chars(C, [Ch]).
+normalize_en_token(S, S).
 
-
-% Igual que remove_punctuation_es pero con su propio predicado de validación.
 remove_punctuation_en(In, Out) :-
-    string_chars(In, Chars),
-    include(valid_char_en, Chars, Filtered),
-    string_chars(Out, Filtered).
+    string_chars(In, Cs),
+    include(valid_char_en, Cs, Fs),
+    string_chars(Out, Fs).
 
-% Caracteres permitidos en inglés (idénticos a español en este caso además del apóstrofe para posesivos y contracciones).
 valid_char_en(C) :-
-    char_type(C, alnum)
-    ; C = ' '
-    ; C = ''''  % apóstrofe
-    ; C = '-' . % guión
+       char_type(C, alnum)  % letras y dígitos
+    ;  C = ' '
+    ;  C = ','
+    ;  C = '\''
+    ;  C = '-'.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%         Auxiliares         %
+% Contracciones inglés → inglés expansión
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+expand_contractions_en(In, Out) :-
+    EN = [
+      ("isn't","is not"),("aren't","are not"),("wasn't","was not"),
+      ("weren't","were not"),("don't","do not"),("doesn't","does not"),
+      ("didn't","did not"),("can't","can not"),("couldn't","could not"),
+      ("shouldn't","should not"),("wouldn't","would not"),("won't","will not"),
+      ("hasn't","has not"),("haven't","have not"),("hadn't","had not"),
+      ("mustn't","must not"),("i'm","i am"),("you're","you are"),
+      ("he's","he is"),("she's","she is"),("it's","it is"),
+      ("we're","we are"),("they're","they are"),("i've","i have"),
+      ("you've","you have"),("they've","they have"),("i'll","i will"),
+      ("you'll","you will"),("he'll","he will"),("she'll","she will"),
+      ("they'll","they will"),("i'd","i would"),("you'd","you would"),
+      ("he'd","he would"),("she'd","she would"),("they'd","they would"),
+      ("that's","that is"),("there's","there is")
+    ],
+    expand_all(EN, In, Out).
 
-% Reemplaza cada ocurrencia de From por To recursivamente.
-expand_all([], Text, Text).
-expand_all([(From, To)|Rest], In, Out) :-
-    % Divide In en partes separadas por From
-    atomic_list_concat(Parts, From, In),
-    % Reconstruye uniendo con To
-    atomic_list_concat(Parts, To, Temp),
-    % Continúa con el resto de la lista
-    expand_all(Rest, Temp, Out).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Auxiliares
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+expand_all([], T, T).
+expand_all([(A,B)|R], In, Out) :-
+    atomic_list_concat(Parts, A, In),
+    atomic_list_concat(Parts, B, Mid),
+    expand_all(R, Mid, Out).
 
-% Si X es átomo, lo convierte a string; si ya es string, lo deja igual.
 atom_or_string_to_string(X, Str) :-
-    ( atom(X)
-    -> atom_string(X, Str)
-    ;  Str = X
-    ).
+    ( atom(X) -> atom_string(X, Str) ; Str = X ).
