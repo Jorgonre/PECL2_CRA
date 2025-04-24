@@ -1,10 +1,15 @@
+:- module(metricas,
+    [ metricas_sp2/1,
+      metricas_verbos/1
+    ]).
+
 :- use_module(library(csv)).
 :- use_module(library(apply)).
-
+:- use_module(library(pairs)).    % ← necesario para group_pairs_by_key/2
 :- use_module(draw).
-              
-:- consult('preprocesar.pl').         % preprocesar_en/2
-:- consult('prueba_2.pl').            % definiciones de fe*/f*
+
+:- consult('preprocesar.pl').
+:- consult('prueba_2.pl').
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -182,16 +187,8 @@ metricas_sp2(File) :-
     ).
 
 
-
- %% -----------------------------
-%% Extensión a metricas.pl: mtricas de verbos por categoría
-%% -----------------------------
-
-:- use_module(library(pairs)).  % Para group_pairs_by_key/2
-
-%% contar_verbos(+Term, -N)
-%% Cuenta recursivamente cuántos functors v(...) (verbos)
-%% hay en Term o en cualquier lista anidada.
+%% contar_verbos(+Árbol, -N)
+%%   N = número de functors v(...) en Árb o en cualquier lista anidada.
 contar_verbos(Term, 0) :-
     var(Term), !.
 contar_verbos(Term, N) :-
@@ -209,33 +206,39 @@ contar_verbos(Term, N) :-
 %% metricas_verbos(+ArchivoCSV)
 %% Lee CSV(categoria;id;frase), analiza cada frase,
 %% y muestra por categoría:
-%%   • número de oraciones analizadas
+%%   • número de oraciones (líneas) analizadas
 %%   • total de verbos encontrados
 %%   • media de verbos por oración
 metricas_verbos(File) :-
     csv_read_file(File, [rec(categoria,id,frase)|Rows],
                   [separator(59), functor(rec), arity(3)]),
-    findall(Cat-NV,
+    % Para cada fila: procesar la frase y sumar verbos de todos sus árboles
+    findall(Cat-VerbCount,
         (
             member(rec(Cat,_,Atom), Rows),
             atom_string(Atom, Sentence),
             preprocesar_en(Sentence, Tokens),
-            oracion(eng, Tree0, Tokens, []),
-            ( is_list(Tree0) -> Trees = Tree0 ; Trees = [Tree0] ),
-            member(Or, Trees),
-            contar_verbos(Or, NV)
+            (   oracion(eng, Tree0, Tokens, [])
+            ->  ( is_list(Tree0) -> Trees = Tree0 ; Trees = [Tree0] )
+            ;   Trees = []
+            ),
+            % contar verbos en cada sub-árbol y sumarlos
+            maplist(contar_verbos, Trees, Counts),
+            sum_list(Counts, VerbCount)
         ),
         Pairs),
+    % agrupar por categoría
     group_pairs_by_key(Pairs, Grouped),
+    % mostrar resultados
     forall(
-        member(Cat-ListNV, Grouped),
+        member(Cat-CountsPerSentence, Grouped),
         (
-            length(ListNV, NumOr),
-            sum_list(ListNV, SumV),
-            AvgV is SumV / NumOr,
+            length(CountsPerSentence, NumOr),
+            sum_list(CountsPerSentence, TotalV),
+            AvgV is TotalV / NumOr,
             format('\n--- Categoría: ~w ---\n', [Cat]),
             format('Oraciones:          ~d\n', [NumOr]),
-            format('Total de verbos:    ~d\n', [SumV]),
+            format('Total de verbos:    ~d\n', [TotalV]),
             format('Verbos por oración: avg=~2f\n', [AvgV])
         )
     ).

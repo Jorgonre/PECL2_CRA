@@ -745,25 +745,31 @@ fem_to_masc_article('unas','unos').
 %%    + Pers: persona para conjugar ('1s','2p',…)
 %%    - Oracion: átomo resultante, p.ej. 'la niña es alta'
 %% -------------------------------------------------------------------
-generar_oracion(ArtMas, NomMas, AdjMas, Num, Gen, Inf, Pers, Oracion) :-
+generar_oracion(ArtIn, NomIn, AdjIn, Num, Gen, Inf, Pers, Oracion) :-
+    % 0) NORMALIZAR entrada a masculino singular:
+    ( fem_to_masc_article(ArtIn, Art0) -> true ; Art0 = ArtIn ),
+    ( feminine_to_masculine(NomIn, Nom0)   -> true ; Nom0 = NomIn ),
+    ( feminine_to_masculine(AdjIn, Adj0)   -> true ; Adj0 = AdjIn ),
+
     % 1) seleccionar artículo base según género
-    ( Gen = f, masc_to_fem_article(ArtMas, ArtFem) ->
-        ArtS = ArtFem
-    ;   ArtS = ArtMas
+    ( Gen = f, masc_to_fem_article(Art0, ArtFem) ->
+         ArtS = ArtFem
+    ;  ArtS = Art0
     ),
+
     % 2) flexionar artículo al número
     ( Num = p, masc_to_fem_article(ArtS, ArtPl) ->
-        Art = ArtPl
-    ;   ( Num = p -> atom_concat(ArtS, 's', Art) ; Art = ArtS )
+         Art = ArtPl
+    ;  ( Num = p -> atom_concat(ArtS, 's', Art) ; Art = ArtS )
     ),
 
     % 3) convertir sustantivo al género y número
-    ( Gen = f -> masculine_to_feminine(NomMas, NomGen) ; NomGen = NomMas ),
-    ( Num = p  -> pluralize(NomGen, Nom)                ; Nom = NomGen ),
+    ( Gen = f -> masculine_to_feminine(Nom0, NomGen) ; NomGen = Nom0 ),
+    ( Num = p  -> pluralize(NomGen, Nom)             ; Nom = NomGen ),
 
     % 4) convertir adjetivo al género y número
-    ( Gen = f -> masculine_to_feminine(AdjMas, AdjGen) ; AdjGen = AdjMas ),
-    ( Num = p  -> pluralize(AdjGen, Adj)               ; Adj = AdjGen ),
+    ( Gen = f -> masculine_to_feminine(Adj0, AdjGen) ; AdjGen = Adj0 ),
+    ( Num = p  -> pluralize(AdjGen, Adj)             ; Adj = AdjGen ),
 
     % 5) conjugar el verbo (y concordar en número si es 'ser')
     ( Inf = 'ser', Num = p ->
@@ -773,3 +779,4 @@ generar_oracion(ArtMas, NomMas, AdjMas, Num, Gen, Inf, Pers, Oracion) :-
 
     % 6) ensamblar palabras con espacios
     atomic_list_concat([Art, Nom, Verbo, Adj], ' ', Oracion).
+

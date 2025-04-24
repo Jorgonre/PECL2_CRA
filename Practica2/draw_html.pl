@@ -47,6 +47,13 @@ tree_leaves(Term, [W], ['-']) :-
     arg(1,Term,L), atomic(L), arg(2,Term,R), atomic(R), !,
     atom_concat(L,'-',Temp), atom_concat(Temp,R,W).
 
+tree_leaves(Term, [W1,W2], [F,F]) :-
+    compound(Term),
+    Term =.. [F, A1, A2],
+    atomic(A1), atomic(A2),
+    atom_string(A1, W1),
+    atom_string(A2, W2).
+    
 tree_leaves(Term, [W], [Tag]) :-
     compound(Term), functor(Term,F,1),
     arg(1,Term,A), atomic(A), !,
