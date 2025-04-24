@@ -106,22 +106,17 @@ analizar_frases_en :-
         )).
         */
 
-exportar_frases_csv(File) :-
-    Sep = 59,                         % código ASCII del punto y coma
-    Options = [separator(Sep)],        % opciones comunes de escritura
-    setup_call_cleanup(
-        open(File, write, Stream, [encoding(utf8)]),
-        (
-            % Cabecera
-            csv_write_stream(Stream, [row(categoria,id,frase)], Options),
-            % Frases del enunciado y de deportes
-            escribir_serie(Stream, fe, 14, enunciado, Options),
-            escribir_serie(Stream, f,  40, deportes,  Options)
-        ),
-        close(Stream)
-    ).
+% Reemplaza cada coma ',' por la secuencia literal '\'',','\''
+replace_commas(Original, Escapada) :-
+    % Separa la cadena en trozos sin incluir las comas
+    split_string(Original, ",", "", Partes),
+    % Vuelve a concatenar insertando "','" entre cada parte
+    atomic_list_concat(Partes, "','", Medio),
+    % Envuelve toda la cadena resultante entre comillas simples
+    atom_concat("'", Medio, Temp),
+    atom_concat(Temp, "'", Escapada).
 
-%% escribir_serie(+Stream,+Prefijo,+Total,+Categoria,+Opts)
+% Versión modificada de escribir_serie/5 para usar replace_commas
 escribir_serie(Stream, Prefijo, Total, Categoria, Opts) :-
     forall(
         between(1, Total, N),
@@ -129,11 +124,30 @@ escribir_serie(Stream, Prefijo, Total, Categoria, Opts) :-
             format(atom(PredAtom), '~w~d', [Prefijo, N]),
             Goal =.. [PredAtom, Frase],
             (   call(Goal)
-            ->  csv_write_stream(Stream, [row(Categoria, N, Frase)], Opts)
+            ->  % Sustituir comas en la frase antes de escribir
+                replace_commas(Frase, FraseEscapada),
+                csv_write_stream(Stream, [row(Categoria, N, FraseEscapada)], Opts)
             ;   true
             )
         )
     ).
+
+
+exportar_frases_csv(File) :-
+    Sep = 59,                        % ';' en ASCII
+    Options = [separator(Sep)],
+    setup_call_cleanup(
+        open(File, write, Stream, [encoding(utf8)]),
+        (
+            % Cabecera
+            csv_write_stream(Stream, [row(categoria,id,frase)], Options),
+            % Emisión de frases, ahora con comas escapadas
+            escribir_serie(Stream, fe, 14, enunciado, Options),
+            escribir_serie(Stream, f,  40, deportes,  Options)
+        ),
+        close(Stream)
+    ).
+
 %%--------------------------------------------------
 %% Extraer sujeto/predicado de un término o/2 o lista
 %%--------------------------------------------------
