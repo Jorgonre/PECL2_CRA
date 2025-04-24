@@ -1295,3 +1295,33 @@ sustituir_cct_en_argumentos(Pos, Arity, Termino, CCT, TerminoTransformado, Funct
         sustituir_cct_en_argumentos(NextPos, Arity, Termino, CCT, TerminoTransformado, Functor)).
 sustituir_cct_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
     Pos > Arity. % Caso base: cuando Pos supera la aridad, termina
+
+
+unir_oraciones(ListaFrases, FraseUnida) :-
+    flatten(ListaFrases, ListaFrasesAplanada),
+    (ListaFrasesAplanada=[O1,O2] ->
+    FraseUnida = og(O1,O2)
+    ; (ListaFrasesAplanada=[O1,O2,O3] ->
+    FraseUnida = og(O1,O2,O3)
+    ; (ListaFrasesAplanada=[O1,O2,O3,O4] ->
+    FraseUnida = og(O1,O2,O3,O4)
+    ;(
+    ListaFrasesAplanada=[O1,O2,O3,O4,O5] ->
+    FraseUnida = og(O1,O2,O3,O4,O5)
+    ;(ListaFrasesAplanada=[O1,O2,O3,O4,O5,O6] ->
+    FraseUnida = og(O1,O2,O3,O4,O5,O6)
+    )))).
+
+% Caso base: una lista vacía es una lista aplanada vacía.
+flatten([], []).
+
+% Si el primer elemento es una lista, aplanamos esa lista y luego aplanamos el resto.
+flatten([Head|Tail], FlatList) :-
+    flatten(Head, FlatHead),
+    flatten(Tail, FlatTail),
+    append(FlatHead, FlatTail, FlatList).
+
+% Si el primer elemento no es una lista, simplemente lo añadimos al resultado.
+flatten(Head, [Head]) :-
+    \+ is_list(Head).
+
