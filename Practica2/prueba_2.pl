@@ -897,6 +897,7 @@ n(manga).
 n(eigakan).
 n(bangohan).
 n(resutoran).
+n(doubutsuen).
 
 
 adj(suki).
