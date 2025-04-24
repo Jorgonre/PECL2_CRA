@@ -32,15 +32,27 @@ choose_phrase :-
     assertz(current_phrase(P)).
 
 load_csv_phrases(Rows) :-
-    csv_read_file('frases.csv', Rows, [functor(frase), arity(3), separator(0';)]),
-    forall(member(frase(_,Id,Atom), Rows),
-           ( atom_string(Atom, Txt),
-             format('~w) ~w~n',[Id,Txt])
-           )).
+    csv_read_file('frases.csv', Rows,
+        [ functor(frase)
+        , arity(2)              % id;frase
+        , separator(0';)
+        , skip_header(true)     % descartamos la cabecera del fichero
+        ]),
+    % imprimimos nuestra propia cabecera
+    writeln('id;frase'),
+    forall(
+      member(frase(Id,Atom), Rows),
+      (
+        atom_string(Atom, Txt),
+        format('~w;~w~n', [Id, Txt])
+      )
+    ).
 
+%% 2) Selecciona frase por Id
 select_csv_phrase(Rows, P) :-
-    write('Numero de frase: '), read_choice(Id2),
-    member(frase(_,Id2,Atom2), Rows),
+    write('Numero de frase: '),
+    read_choice(Id2),
+    member(frase(Id2, Atom2), Rows),
     atom_string(Atom2, P).
 
 prompt_language :-
@@ -140,7 +152,10 @@ analysis_menu(Trees) :-
 
 run_analysis_option(1, Trees) :-
     forall(member(T, Trees),
-      ( nl, draw:draw(T), nl )
+      ( nl, 
+      Trees = [T],
+      prueba_2:unir_oraciones(T, U),
+      draw:draw(U), nl )
     ).
 run_analysis_option(2, Trees) :-
     forall(nth1(I, Trees, T),
@@ -150,6 +165,7 @@ run_analysis_option(2, Trees) :-
       )
     ).
 run_analysis_option(3, Trees) :-
+    writeln(Trees),
     format('Estructura Prolog resultante:~n~n'),
     forall(member(Tree, Trees),
         ( portray_clause(Tree), nl )
