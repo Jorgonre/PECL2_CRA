@@ -32,15 +32,27 @@ choose_phrase :-
     assertz(current_phrase(P)).
 
 load_csv_phrases(Rows) :-
-    csv_read_file('frases.csv', Rows, [functor(frase), arity(2), separator(0';)]),
-    forall(member(frase(_,Id,Atom), Rows),
-           ( atom_string(Atom, Txt),
-             format('~w) ~w~n',[Id,Txt])
-           )).
+    csv_read_file('frases.csv', Rows,
+        [ functor(frase)
+        , arity(2)              % id;frase
+        , separator(0';)
+        , skip_header(true)     % descartamos la cabecera del fichero
+        ]),
+    % imprimimos nuestra propia cabecera
+    writeln('id;frase'),
+    forall(
+      member(frase(Id,Atom), Rows),
+      (
+        atom_string(Atom, Txt),
+        format('~w;~w~n', [Id, Txt])
+      )
+    ).
 
+%% 2) Selecciona frase por Id
 select_csv_phrase(Rows, P) :-
-    write('Numero de frase: '), read_choice(Id2),
-    member(frase(_,Id2,Atom2), Rows),
+    write('Numero de frase: '),
+    read_choice(Id2),
+    member(frase(Id2, Atom2), Rows),
     atom_string(Atom2, P).
 
 prompt_language :-
@@ -174,7 +186,7 @@ ask_sentence(Prompt, S) :-
     normalize_space(string(S), S0).
 
 normalise_trees(Raw, List) :-
-    ( Raw = [_|_] -> List = Raw ; List = [Raw] ).
+    ( Raw = [|] -> List = Raw ; List = [Raw] ).
 
 close_list(List, Closed) :-
     is_list(List), !,
