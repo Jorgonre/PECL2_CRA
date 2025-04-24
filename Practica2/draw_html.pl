@@ -19,10 +19,10 @@ draw_html_transformed(Tree, Base) :-
     Tree =.. [_Conj, S, P],
     tree_leaves(S, W1, T1), length(W1,L1),
     tree_leaves(P, W2, T2), length(W2,L2),
-    append(W1,W2,Words), append(T1,T2,Tags),
+    append(W1,W2,Words),   append(T1,T2,Tags),
     End is L1+L2-1,
-    Cats = [ span(0,   L1-1, "SN / Sujeto"),
-             span(L1, End,   "SV / Predicado") ],
+    Cats = [ span(0,   L1-1, "SN / Sujeto"),
+             span(L1, End,   "SV / Predicado") ],
     visualize(Words, Tags, Cats, L1, Base).
 
 %! tree_leaves(+Tree, -Words, -Tags) is det.
@@ -61,47 +61,104 @@ tree_leaves(Term, Ws, Ts) :-
 visualize(Words, Tags, Cats, SubjLen, Base) :-
     format(atom(File),"~w.html",[Base]),
     open(File,write,Out),
+    % --- HEAD y ESTILOS básicos ---
     write(Out,"<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\">\n"),
     write(Out,
 "<style>
  table.tree{border-collapse:collapse;width:100%;}
  table.tree td{text-align:center;padding:4px;font-family:sans-serif;}
- /* toda la fila de palabras en azul y negrita */
  tr.words td{background:#c2e7ff;font-weight:bold;}
- /* luego pintamos sujeto/predicado */
  tr.words td.subj{background:#d1e7dd;}
  tr.words td.pred{background:#f8d7da;}
  tr.tags  td{background:#ffe599;}
  tr.cats  td{border-top:2px solid #333;}
-</style></head><body><table class=\"tree\">\n"),
-    % Palabras (añadimos style en la última celda del sujeto)
+ td.highlight { outline: 2px dashed orange; }
+</style>\n"),
+    % --- SCRIPT de interactividad ---
+    write(Out,
+"<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 1) Hover: resalta por data-tag
+  document.querySelectorAll('td[data-tag]').forEach(td => {
+    td.addEventListener('mouseover', () => {
+      const tag = td.dataset.tag;
+      document.querySelectorAll(`td[data-tag=\"${tag}\"]`)
+              .forEach(x => x.classList.add('highlight'));
+    });
+    td.addEventListener('mouseout', () => {
+      const tag = td.dataset.tag;
+      document.querySelectorAll(`td[data-tag=\"${tag}\"]`)
+              .forEach(x => x.classList.remove('highlight'));
+    });
+  });
+
+  // 2) Click sobre palabras/etiquetas: mostrar rango de índices
+  document.querySelectorAll('td[data-tag]').forEach(td => {
+    td.addEventListener('click', () => {
+      const tag = td.dataset.tag;
+      // recogemos todos los índices
+      const idxs = Array.from(document
+        .querySelectorAll(`td[data-tag=\"${tag}\"]`))
+        .map(c => parseInt(c.dataset.index));
+      const min = Math.min(...idxs), max = Math.max(...idxs);
+      alert(`Etiqueta “${tag}”: índices ${min}–${max}`);
+    });
+  });
+
+  // 3) Click en SN/SV: como antes
+  document.querySelectorAll('td.cats').forEach(td => {
+    td.addEventListener('click', () => {
+      const from = td.dataset.from, to = td.dataset.to, lbl = td.textContent;
+      alert(`Rango ${from}–${to}: ${lbl}`);
+    });
+  });
+
+});
+</script>\n"),
+    write(Out,"</head><body><table class=\"tree\">\n"),
+
+    % --- FILA de PALABRAS ---
     write(Out,"<tr class=\"words\">"),
     forall(nth0(I,Words,W),
-      ( Cls=(I<SubjLen->subj;pred),
+      ( nth0(I,Tags,Tag),
+        Cls = (I<SubjLen->subj;pred),
         ( I =:= SubjLen-1
-        -> format(Out,"<td class=\"~w\" style=\"border-right:3px solid #333\">~w</td>",[Cls,W])
-        ;  format(Out,"<td class=\"~w\">~w</td>",[Cls,W])
+        -> format(Out,
+            "<td class=\"~w\" data-index=\"~d\" data-tag=\"~w\" style=\"border-right:3px solid #333\">~w</td>",
+            [Cls,I,Tag,W])
+        ;  format(Out,
+            "<td class=\"~w\" data-index=\"~d\" data-tag=\"~w\">~w</td>",
+            [Cls,I,Tag,W])
         )
       )),
     write(Out,"</tr>\n"),
-    % Etiquetas (idem)
+
+    % --- FILA de ETIQUETAS ---
     write(Out,"<tr class=\"tags\">"),
-    forall(nth0(I,Tags,T),
-      ( Cls=(I<SubjLen->subj;pred),
+    forall(nth0(I,Tags,TTag),
+      ( Cls = (I<SubjLen->subj;pred),
         ( I =:= SubjLen-1
-        -> format(Out,"<td class=\"~w\" style=\"border-right:3px solid #333\">~w</td>",[Cls,T])
-        ;  format(Out,"<td class=\"~w\">~w</td>",[Cls,T])
+        -> format(Out,
+            "<td class=\"~w\" data-index=\"~d\" data-tag=\"~w\" style=\"border-right:3px solid #333\">~w</td>",
+            [Cls,I,TTag,TTag])
+        ;  format(Out,
+            "<td class=\"~w\" data-index=\"~d\" data-tag=\"~w\">~w</td>",
+            [Cls,I,TTag,TTag])
         )
       )),
     write(Out,"</tr>\n"),
-    % SN / SV
+
+    % --- FILA de SN / SV ---
     write(Out,"<tr class=\"cats\">"),
     forall(member(span(From,To,Lbl),Cats),
       ( Len is To-From+1,
-        Cl2=(From<SubjLen->subj;pred),
-        format(Out,"<td class=\"cats ~w\" colspan=\"~w\">~w</td>",
-               [Cl2,Len,Lbl])
+        Cl2 = (From<SubjLen->subj;pred),
+        format(Out,
+          "<td class=\"cats ~w\" data-from=\"~d\" data-to=\"~d\" colspan=\"~w\">~w</td>",
+          [Cl2,From,To,Len,Lbl])
       )),
     write(Out,"</tr></table></body></html>\n"),
+
     close(Out),
-    format('HTML generado en \"~w\".~n',[File]).
+    format('HTML generado en "~w".~n',[File]).
