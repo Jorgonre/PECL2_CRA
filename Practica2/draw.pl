@@ -26,7 +26,8 @@
 /*                                                                             */
 /*-----------------------------------------------------------------------------*/
 
-:- module(draw, [draw/1, imprimir_frase_subrayada/1]).
+
+:- module(draw, [draw/1]).
 
 
 /* ---- begin draw routine ----------------------------------------------------*/
@@ -413,11 +414,13 @@ imprimir_frase(PREP) :-
 imprimir_frase(SUJ) :- 
         ( SUJ = gn(Izq)
         ->  imprimir_frase(Izq) % Nodo frase verbal
-        ; functor(SUJ, gn, Arity), Arity > 1, 
+        ; (SUJ = g_nom_prop(Izq)
+        ->  imprimir_frase(Izq)
+        ;  functor(SUJ, gn, Arity), Arity > 1, 
           arg(1, SUJ, Izq), % Obtener el primer hijo
           gn_sin_primero(SUJ, Resto), % Obtener los demás hijos
           imprimir_frase(Izq), write(' '), imprimir_frase(Resto) % Imprimir el primer hijo y luego los demás
-        ).
+        )).
 
 imprimir_frase(PRED) :- 
         ( PRED = gv(Izq)
@@ -543,13 +546,15 @@ calcular_longitud_frase(PREP, Longitud) :-
 calcular_longitud_frase(SUJ, Longitud) :-
         (   SUJ = gn(Izq) % Si solo hay un hijo
         ->      calcular_longitud_frase(Izq, Longitud) % Nodo frase nominal
-        ;   functor(SUJ, gn, Arity), Arity > 1 ->
+        ;   (   SUJ = g_nom_prop(Izq) % Si es un nombre propio
+        ->      calcular_longitud_frase(Izq, Longitud) % Nodo nombre propio
+        ;       functor(SUJ, gn, Arity), Arity > 1 ->
                 arg(1, SUJ, Izq), % Obtener el primer hijo
                 gv_sin_primero(SUJ, Resto), % Obtener los demás hijos
                 calcular_longitud_frase(Izq, LongIzq),
                 calcular_longitud_frase(Resto, LongResto),
                 Longitud is LongIzq + LongResto + 1 % Suma 1 por el espacio entre palabras
-        ).
+        )).
 
 calcular_longitud_frase(PRED, Longitud) :-
         (   PRED = gv(Izq) % Si solo hay un hijo
@@ -687,11 +692,13 @@ imprimir_palabra_subrayada(PREP) :-
 imprimir_palabra_subrayada(SUJ) :- 
         ( SUJ = gn(Izq)
         ->  imprimir_palabra_subrayada(Izq) % Nodo frase nominal
+        ; (SUJ = g_nom_prop(Izq)
+        ->  imprimir_palabra_subrayada(Izq) % Nodo nombre propio
         ; functor(SUJ, gn, Arity), Arity > 1, 
           arg(1, SUJ, Izq), % Obtener el primer hijo
           gv_sin_primero(SUJ, Resto), % Obtener los demás hijos
           imprimir_palabra_subrayada(Izq), write(' '), imprimir_palabra_subrayada(Resto) % Imprimir el primer hijo y luego los demás
-        ).
+        )).
 
 imprimir_palabra_subrayada(PRED) :- 
         ( PRED = gv(Izq)
@@ -813,11 +820,13 @@ imprimir_etiqueta_centrada(PREP) :-
 imprimir_etiqueta_centrada(SUJ) :- 
         ( SUJ = gn(Izq)
         ->  imprimir_etiqueta_centrada(Izq) % Nodo frase verbal
+        ; (SUJ = g_nom_prop(Izq)
+        ->  imprimir_etiqueta_centrada(Izq) % Nodo nombre propio
         ; functor(SUJ, gn, Arity), Arity > 1, 
           arg(1, SUJ, Izq), % Obtener el primer hijo
           gv_sin_primero(SUJ, Resto), % Obtener los demás hijos
           imprimir_etiqueta_centrada(Izq), wspaces(1), imprimir_etiqueta_centrada(Resto) % Imprimir el primer hijo y luego los demás
-        ).
+        )).
 
 imprimir_etiqueta_centrada(PRED) :- 
         ( PRED = gv(Izq)
@@ -1039,6 +1048,4 @@ imprimir_complementos(Arbol) :-
         imprimir_complementos_subrayados(Arbol),
         nl, % Salto de línea
         imprimir_etiqueta_complementos(Arbol).
-
-
 
