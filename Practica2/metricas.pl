@@ -74,7 +74,7 @@ f36('elisa and pablo are preparing for a relay race').
 f37('eduardo practices judo and has obtained his black belt').
 f38('ariana, who has great dexterity, plays volleyball on the beach').
 f39('andrea has participated in her first triathlon and has managed to finish on the podium').
-f40('oscar trains daily to improve his pole vaulting technique').
+f40('the sports handbag, which is chinese, was imported last week').
 
 %Predicado para analizar las frases en ingles
 analizar_frases_en :-
@@ -105,16 +105,46 @@ analizar_frases_en :-
             %write('Frase analizada: '), writeln(analizado) % Mostrar la frase analizada
         )).
         */
+exportar_frases_csv2(File) :-
+    setup_call_cleanup(
+      open(File, write, Stream, [encoding(utf8)]),
+      (
+        format(Stream, 'id;frase~n', []),
+        % recogemos las 14+40 frases
+        findall(S, (between(1,14,N), atom_concat(fe,N,P), Goal=..[P,S], call(Goal)), L1),
+        findall(S, (between(1,40,M), atom_concat(f, M, P), Goal=..[P,S], call(Goal)), L2),
+        append(L1, L2, All),
+        export_phrases(Stream, 1, All)
+      ),
+      close(Stream)
+    ).
 
-% Reemplaza cada coma ',' por la secuencia literal '\'',','\''
-replace_commas(Original, Escapada) :-
-    % Separa la cadena en trozos sin incluir las comas
-    split_string(Original, ",", "", Partes),
-    % Vuelve a concatenar insertando "','" entre cada parte
-    atomic_list_concat(Partes, "','", Medio),
-    % Envuelve toda la cadena resultante entre comillas simples
-    atom_concat("'", Medio, Temp),
-    atom_concat(Temp, "'", Escapada).
+% Caso base
+export_phrases(_,    _,    [])     :- !.
+export_phrases(Stream, N, [S|Rest]) :-
+    % Parto la frase en "palabras" (espacios)
+    split_string(S, " ", "", WordsStrings),
+    expand_commas(WordsStrings, TokenStrs),
+    % Uno con comas
+    atomic_list_concat(TokenStrs, ',', Inner),
+    format(Stream, '~w;[~w]~n', [N, Inner]),
+    N1 is N+1,
+    export_phrases(Stream, N1, Rest).
+
+% expand_commas(+WordsStrings, -Tokens)
+% si el elemento acaba en ',', lo separa
+expand_commas([], []).
+expand_commas([W|Ws], Tokens) :-
+    ( sub_string(W, _, 1, 0, ",") ->
+        % es "foo,"
+        sub_string(W, 0, _, 1, Wno),
+        % tokenizamos en [Wno, "','"]
+        Tokens = [Wno, "','" | Rest]
+    ;
+        % token normal
+        Tokens = [W | Rest]
+    ),
+    expand_commas(Ws, Rest).
 
 % Versión modificada de escribir_serie/5 para usar replace_commas
 escribir_serie(Stream, Prefijo, Total, Categoria, Opts) :-
@@ -147,7 +177,6 @@ exportar_frases_csv(File) :-
         ),
         close(Stream)
     ).
-
 %%--------------------------------------------------
 %% Extraer sujeto/predicado de un término o/2 o lista
 %%--------------------------------------------------
