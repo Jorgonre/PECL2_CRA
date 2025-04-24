@@ -100,8 +100,15 @@ process_pre_es :-
     format('Tokens ES: ~w~n',[Ts]).
 process_pre_en :-
     current_phrase(P),
-    preprocesar:preprocesar_en(P, Ts),
+    clean_single_quotes(P, CleanP),
+    preprocesar:preprocesar_en(CleanP, Ts),
     format('Tokens EN: ~w~n',[Ts]).
+
+clean_single_quotes(Input, Cleaned) :-
+    % Elimina comillas simples al inicio y al final, y dentro del string
+    string_codes(Input, Codes),
+    exclude(=(39), Codes, NoQuotes),  % 39 es el código ASCII de '
+    string_codes(Cleaned, NoQuotes).
 
 process_trans_es_en :-
     current_phrase(P),
@@ -114,7 +121,8 @@ process_trans_en_es :-
 
 do_analysis :-
     current_phrase(P),
-    preprocesar:preprocesar_en(P, Toks),
+    clean_single_quotes(P, CleanP),  % Limpiar las comillas antes de procesar
+    preprocesar:preprocesar_en(CleanP, Toks),  % Ahora pasas los tokens ya limpios
     ( prueba_2:oracion(eng,Raw0,Toks,[]) ->
         ( Raw0 = [F|_] -> Flat = F ; Flat = Raw0 ),
         normalise_trees(Flat,Trees),
