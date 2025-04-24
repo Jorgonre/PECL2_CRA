@@ -1,55 +1,55 @@
-categoria;id;frase
-a;1;jose is dark-skinned and mary is tall
-a;2;jose is studying philosophy but mary is studying law
-a;3;mary drinks coffee while jose clears the table
-a;4;jose drinks coffee and reads the newspaper
-a;5;jose and hector eat chips and drink beer
-a;6;jose eats chips but mary prefers paella although hector drinks coffee and irene reads a novel
-a;7;irene sings and jumps while jose studies
-a;8;hector eats chips and drinks juice while jose sings and skips ',' although maria reads a novel
-a;9;jose ',' who is agile ',' climbs on the climbing wall in the afternoons
-a;10;jose ',' who is very delicate ',' eats only red apples
-a;11;the word processor ',' which is quite a powerful tool ',' is used to write documents
-a;12;the word processor is a very powerful tool for writing documents ',' but it is quite slow
-a;13;the mouse that the cat caught was grey
-a;14;the man we saw yesterday was my neighbour
-a;15;juan plays football while pedro plays basketball
-a;16;javier and juan are the goalkeepers of the team
-a;17;rafa has won the roland-garros
-a;18;aitana has won the golden ball
-a;19;julian is a great player
-a;20;miguel is the best basketball player and leo is the best football player
-a;21;marta is the best swimmer in her club
-a;22;alex plays tennis while marcos plays paddle tennis
-a;23;paula has won a gold medal in synchronised swimming
-a;24;sara and claudia compete together in rhythmic gymnastics
-a;25;daniel is an expert in martial arts and has won several tournaments
-a;26;beatriz runs marathons and trains every day
-a;27;maria and carlos are the best sports dance couple in the region
-a;28;andres plays rugby while diego practices boxing
-a;29;lucas has been elected the best player of the tournament
-a;30;elena and sofia are the captains of the volleyball team
-a;31;tomas has broken the long jump record in his category
-a;32;laura practices climbing and has climbed impressive mountains
-a;33;javier has been selected for the national handball team
-a;34;ana and luis are taking part in an international triathlon competition
-a;35;jaime and natalia train together for the next cycling race
-a;36;ruben practices archery while ines plays hockey
-a;37;clara has been named the best chess player in her school
-a;38;alvaro has won the junior tennis championship
-a;39;cristina and david are taking part in an international athletics competition
-a;40;santiago has beaten his personal record in weightlifting
-a;41;jorge and rocio compete in whitewater kayaking
-a;42;sofia has achieved a new record in freestyle swimming
-a;43;pedro and angela play table tennis on weekends
-a;44;diego goes skiing while martina enjoys snowboarding
-a;45;lucia has won the title of regional champion in artistic gymnastics
-a;46;alberto ',' who is very agile ',' practises parkour around the city
-a;47;teresa has won a gold medal in shooting
-a;48;miguel and sergio enjoy playing badminton after school
-a;49;alexis ',' who is very strong ',' trains for the wrestling championship
-a;50;the girl we greeted before was his exteammate
-a;51;the man that irene likes was very skillful
-a;52;ariana ',' who has great dexterity ',' plays volleyball on the beach
-a;53;the artificial intelligence ',' which is changing the world of sports ',' is very advanced
-a;54;the sports handbag ',' which is chinese ',' was imported last week
+id;frase
+1;jose is dark-skinned and mary is tall
+2;jose is studying philosophy but mary is studying law
+3;mary drinks coffee while jose clears the table
+4;jose drinks coffee and reads the newspaper
+5;jose and hector eat chips and drink beer
+6;jose eats chips but mary prefers paella although hector drinks coffee and irene reads a novel
+7;irene sings and jumps while jose studies
+8;hector eats chips and drinks juice while jose sings and skips ',' although maria reads a novel
+9;jose ',' who is agile ',' climbs on the climbing wall in the afternoons
+10;jose ',' who is very delicate ',' eats only red apples
+11;the word processor ',' which is quite a powerful tool ',' is used to write documents
+12;the word processor is a very powerful tool for writing documents ',' but it is quite slow
+13;the mouse that the cat caught was grey
+14;the man we saw yesterday was my neighbour
+15;juan plays football while pedro plays basketball
+16;javier and juan are the goalkeepers of the team
+17;rafa has won the roland-garros
+18;aitana has won the golden ball
+19;julian is a great player
+20;miguel is the best basketball player and leo is the best football player
+21;marta is the best swimmer in her club
+22;alex plays tennis while marcos plays paddle tennis
+23;paula has won a gold medal in synchronised swimming
+24;sara and claudia compete together in rhythmic gymnastics
+25;daniel is an expert in martial arts and has won several tournaments
+26;beatriz runs marathons and trains every day
+27;maria and carlos are the best sports dance couple in the region
+28;andres plays rugby while diego practices boxing
+29;lucas has been elected the best player of the tournament
+30;elena and sofia are the captains of the volleyball team
+31;tomas has broken the long jump record in his category
+32;laura practices climbing and has climbed impressive mountains
+33;javier has been selected for the national handball team
+34;ana and luis are taking part in an international triathlon competition
+35;jaime and natalia train together for the next cycling race
+36;ruben practices archery while ines plays hockey
+37;clara has been named the best chess player in her school
+38;alvaro has won the junior tennis championship
+39;cristina and david are taking part in an international athletics competition
+40;santiago has beaten his personal record in weightlifting
+41;jorge and rocio compete in whitewater kayaking
+42;sofia has achieved a new record in freestyle swimming
+43;pedro and angela play table tennis on weekends
+44;diego goes skiing while martina enjoys snowboarding
+45;lucia has won the title of regional champion in artistic gymnastics
+46;alberto ',' who is very agile ',' practises parkour around the city
+47;teresa has won a gold medal in shooting
+48;miguel and sergio enjoy playing badminton after school
+49;alexis ',' who is very strong ',' trains for the wrestling championship
+50;the girl we greeted before was his exteammate
+51;the man that irene likes was very skillful
+52;ariana ',' who has great dexterity ',' plays volleyball on the beach
+53;the artificial intelligence ',' which is changing the world of sports ',' is very advanced
+54;the sports handbag ',' which is chinese ',' was imported last week
