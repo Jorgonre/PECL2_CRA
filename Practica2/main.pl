@@ -117,7 +117,8 @@ do_analysis :-
     read(Toks),
     ( prueba_2:oracion(eng, Raw0, Toks, []) ->
         ( Raw0 = [F|_] -> Flat = F ; Flat = Raw0 ),
-        normalise_trees(Flat, Trees),
+        normalise_trees(Raw0, Trees0),
+        close_list(Trees0, Trees),
         analysis_menu(Trees)
     ; writeln('No se pudo analizar.')
     ).
@@ -148,10 +149,12 @@ run_analysis_option(2, Trees) :-
         draw_html:draw_html(T, Base)
       )
     ).
-run_analysis_option(3, Trees) :-                  % ← new clause
-    format('Estructura Prolog resultante:~n'),
-    writeln(Trees),                                % escribe la lista de árboles
-    nl.
+run_analysis_option(3, Trees) :-
+    format('Estructura Prolog resultante:~n~n'),
+    forall(member(Tree, Trees),
+        ( portray_clause(Tree), nl )
+    ).
+
 run_analysis_option(_, _) :-
     writeln('Opcion no valida.').
 
@@ -168,3 +171,8 @@ ask_sentence(Prompt, S) :-
 
 normalise_trees(Raw, List) :-
     ( Raw = [_|_] -> List = Raw ; List = [Raw] ).
+
+close_list(List, Closed) :-
+    is_list(List), !,
+    append(List, [], Closed).
+close_list(Other, [Other]).  % por si acaso no era lista
