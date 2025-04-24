@@ -17,11 +17,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fe1('jose is dark-skinned and mary is tall').
-fe2('jose is studying philosophy, but mary is studying law').
+fe2('jose is studying philosophy but mary is studying law').
 fe3('mary drinks coffee while jose clears the table').
 fe4('jose drinks coffee and reads the newspaper').
 fe5('jose and hector eat chips and drink beer').
-fe6('jose eats chips, but mary prefers paella, although hector drinks coffee and irene reads a novel').
+fe6('jose eats chips but mary prefers paella although hector drinks coffee and irene reads a novel').
 fe7('irene sings and jumps while jose studies').
 fe8('hector eats chips and drinks juice while jose sings and skips, although maria reads a novel').
 fe9('jose, who is agile, climbs on the climbing wall in the afternoons').
@@ -70,10 +70,10 @@ f32('alberto, who is very agile, practises parkour around the city').
 f33('teresa has won a gold medal in shooting').
 f34('miguel and sergio enjoy playing badminton after school').
 f35('alexis, who is very strong, trains for the wrestling championship').
-f36('elisa and pablo are preparing for a relay race').
-f37('eduardo practices judo and has obtained his black belt').
+f36('the girl we greeted before was his exteammate').
+f37('the man that irene likes was very skillful').
 f38('ariana, who has great dexterity, plays volleyball on the beach').
-f39('andrea has participated in her first triathlon and has managed to finish on the podium').
+f39('the artificial intelligence, which is changing the world of sports, is very advanced').
 f40('the sports handbag, which is chinese, was imported last week').
 
 %Predicado para analizar las frases en ingles
@@ -130,52 +130,64 @@ export_phrases(Stream, N, [S|Rest]) :-
     format(Stream, '~w;[~w]~n', [N, Inner]),
     N1 is N+1,
     export_phrases(Stream, N1, Rest).
-
-% expand_commas(+WordsStrings, -Tokens)
-% si el elemento acaba en ',', lo separa
+%% expand_commas(+WordsStrings, -Tokens)
+%% si un elemento acaba en ',' lo descompone en [PalabraSinComa, "','"]
 expand_commas([], []).
 expand_commas([W|Ws], Tokens) :-
     ( sub_string(W, _, 1, 0, ",") ->
-        % es "foo,"
         sub_string(W, 0, _, 1, Wno),
-        % tokenizamos en [Wno, "','"]
         Tokens = [Wno, "','" | Rest]
     ;
-        % token normal
         Tokens = [W | Rest]
     ),
     expand_commas(Ws, Rest).
 
-% Versión modificada de escribir_serie/5 para usar replace_commas
-escribir_serie(Stream, Prefijo, Total, Categoria, Opts) :-
-    forall(
-        between(1, Total, N),
-        (
-            format(atom(PredAtom), '~w~d', [Prefijo, N]),
-            Goal =.. [PredAtom, Frase],
-            (   call(Goal)
-            ->  % Sustituir comas en la frase antes de escribir
-                replace_commas(Frase, FraseEscapada),
-                csv_write_stream(Stream, [row(Categoria, N, FraseEscapada)], Opts)
-            ;   true
-            )
-        )
-    ).
-
-
+%% exportar_frases_csv(+File)
+%% genera CSV "id;frase" con 54 filas, y las comas internas como literal "','"
 exportar_frases_csv(File) :-
-    Sep = 59,                        % ';' en ASCII
+    Sep = 59,                              % ';' como separador
     Options = [separator(Sep)],
     setup_call_cleanup(
-        open(File, write, Stream, [encoding(utf8)]),
-        (
-            % Cabecera
-            csv_write_stream(Stream, [row(categoria,id,frase)], Options),
-            % Emisión de frases, ahora con comas escapadas
-            escribir_serie(Stream, fe, 14, enunciado, Options),
-            escribir_serie(Stream, f,  40, deportes,  Options)
-        ),
-        close(Stream)
+      open(File, write, Stream, [encoding(utf8)]),
+      (
+        % 1) Cabecera
+        csv_write_stream(Stream, [row(id,frase)], Options),
+        % 2) Arrancar contador
+        nb_setval(frase_counter, 1),
+        % 3) Emitir fe1–fe14 y f1–f40
+        escribir_serie_seq(Stream, fe, 14, Options),
+        escribir_serie_seq(Stream, f,  40, Options)
+      ),
+      close(Stream)
+    ).
+
+%% escribir_serie_seq(+Stream, +Prefijo, +Total, +Opts)
+%% por cada N=1..Total:
+%%   - llama a PrefijoN/1 si existe, o '' si no
+%%   - tokeniza por espacios, expande comas, vuelve a ensamblar
+%%   - escribe [Id, FraseEscapada], incrementa Id
+escribir_serie_seq(Stream, Prefijo, Total, Opts) :-
+    forall(
+      between(1, Total, N),
+      (
+        format(atom(Pred), '~w~d', [Prefijo, N]),
+        Goal =.. [Pred, Frase0],
+        ( call(Goal) -> true ; Frase0 = '' ),
+
+        % 1) partir en palabras
+        split_string(Frase0, " ", "", Words0),
+        % 2) expandir comas
+        expand_commas(Words0, Tokens),
+        % 3) volver a frase
+        atomic_list_concat(Tokens, " ", FraseEscapada),
+
+        % 4) obtener y escribir Id
+        nb_getval(frase_counter, Id),
+        csv_write_stream(Stream, [row(Id, FraseEscapada)], Opts),
+        % 5) incrementar contador
+        Id1 is Id + 1,
+        nb_setval(frase_counter, Id1)
+      )
     ).
 %%--------------------------------------------------
 %% Extraer sujeto/predicado de un término o/2 o lista

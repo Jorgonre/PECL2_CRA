@@ -67,11 +67,12 @@ choose_phrase :-
 %------------------------------------------------------------------------------%
 load_csv_phrases(Rows) :-
     csv_read_file('frases.csv', Rows,
-                  [ functor(frase), arity(3), separator(0';) ]),
+                  [ functor(frase), arity(2), separator(0';) ]),
     forall(
-      member(frase(_,Id,Atom), Rows),
-      ( atom_string(Atom, Txt),           % átomo → string
-        format('~w) ~w~n', [Id,Txt])     % imprime "Id) Texto"
+      member(frase(Id,Atom), Rows),
+      (
+        atom_string(Atom, Txt),
+        format('~w) ~w~n', [Id,Txt])
       )
     ).
 
@@ -81,7 +82,7 @@ load_csv_phrases(Rows) :-
 %------------------------------------------------------------------------------%
 select_csv_phrase(Rows, P) :-
     write('Numero de frase: '), read_choice(Id2),
-    member(frase(_,Id2,Atom2), Rows),    % busca el término con ese ID
+    member(frase(Id2,Atom2), Rows),    % busca el término con ese ID
     atom_string(Atom2, P).               % átomo → string
 
 %------------------------------------------------------------------------------%
