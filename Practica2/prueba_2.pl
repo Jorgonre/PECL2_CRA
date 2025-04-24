@@ -912,8 +912,13 @@ v(ikimasu).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 lugar((gp(prep(on)),gn(det(the),n(climbing_wall)))).
+lugar((gp(prep(in)),gn(det(the),n(region)))).
+lugar((gp(prep(around)),gn(det(the),n(city)))).
+lugar((gp(prep(on)),gn(det(the),n(beach)))).
 tiempo((gadv(adv(yesterday)))).
 tiempo((gp(prep(in)),gn(det(the),n(afternoons)))).
+tiempo((gadv(adv(every)),gn(n(day)))).
+tiempo((gp(prep(on)),gn(n(weekends)))).
 
 % Detecta el complemento directo recorriendo todos los hijos del gv
 detectar_complemento_directo(o(_, GV), CD) :-
@@ -1310,7 +1315,7 @@ unir_oraciones(ListaFrases, FraseUnida) :-
     FraseUnida = og(O1,O2,O3,O4,O5)
     ;(ListaFrasesAplanada=[O1,O2,O3,O4,O5,O6] ->
     FraseUnida = og(O1,O2,O3,O4,O5,O6)
-    )))).
+    ))))).
 
 % Caso base: una lista vacía es una lista aplanada vacía.
 flatten([], []).
