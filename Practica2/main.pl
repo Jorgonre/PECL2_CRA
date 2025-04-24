@@ -122,11 +122,15 @@ do_analysis :-
     ; writeln('No se pudo analizar.')
     ).
 
+%% ----------------------------
+%% Sub-menú para los árboles analizados
+%% ----------------------------
 analysis_menu(Trees) :-
     repeat,
-      writeln('------ ANALISIS ------'),
+      nl, writeln('------ ANALISIS ------'),
       writeln(' 1) Mostrar arbol ASCII'),
       writeln(' 2) Generar HTML subrayado'),
+      writeln(' 3) Mostrar estructuras Prolog'),     
       writeln(' 0) Volver'),
       write('Opcion: '), read_choice(Op),
       ( Op =:= 0 -> !
@@ -144,6 +148,10 @@ run_analysis_option(2, Trees) :-
         draw_html:draw_html(T, Base)
       )
     ).
+run_analysis_option(3, Trees) :-                  % ← new clause
+    format('Estructura Prolog resultante:~n'),
+    writeln(Trees),                                % escribe la lista de árboles
+    nl.
 run_analysis_option(_, _) :-
     writeln('Opcion no valida.').
 

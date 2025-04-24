@@ -12,7 +12,6 @@
    Preprocesa cadenas ES o EN:
    - a minúsculas
    - elimina puntuación
-   - expande contracciones
    - separa en tokens (átomos)
 */
 
@@ -49,6 +48,7 @@ preprocesar_en(Sentence, Tokens) :-
     split_string(CleanPunct, " ", "", Split),
     exclude(==( ""), Split, NonEmpty),
     maplist(atom_string, Tokens, NonEmpty).
+
 
 expand_contractions_en(In, Out) :-
     ENContracciones = [
