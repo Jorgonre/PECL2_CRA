@@ -85,7 +85,7 @@ menu_item(es, 'Traducir ES->EN',         trans_es_en).
 menu_item(en, 'Preprocesar English',     pre_en).
 menu_item(en, 'Traducir EN->ES',         trans_en_es).
 
-menu_item(_,  'Analisis sintactico',     analysis).
+menu_item(en,  'Analisis sintactico',     analysis).
 menu_item(_,  'Cambiar frase',           change).
 menu_item(_,  'Salir',                   exit).
 

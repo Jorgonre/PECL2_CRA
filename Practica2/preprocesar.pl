@@ -22,7 +22,7 @@
 preprocesar_es(Sentence, Tokens) :-
     atom_or_string_to_string(Sentence, Str),
     string_lower(Str, Lower),
-    remove_punctuation_es(Expanded, CleanPunct),
+    remove_punctuation_es(Lower, CleanPunct),
     split_string(CleanPunct, " ", "", Split),
     exclude(==( ""), Split, NonEmpty),
     maplist(atom_string, Tokens, NonEmpty).
