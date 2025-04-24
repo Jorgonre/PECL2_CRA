@@ -426,6 +426,7 @@ n(chinese).
 n(week).
 n(girl).
 n(exgirlfriend).
+n(exteammate).
 
 
 nombre_compuesto(climbing, wall).
@@ -447,6 +448,7 @@ nombre_compuesto(athletics, competition).
 nombre_compuesto(whitewater, kayaking).
 nombre_compuesto(table, tennis).
 nombre_compuesto(wrestling, championship).
+nombre_compuesto(sports, handbag).
 
 
 % NOMBRES PROPIOS
@@ -656,6 +658,8 @@ adj(artificial).
 adj(advanced).
 adj(last).
 adj(attractive).
+adj(good).
+adj(skillful).
 
 
 % ADVERBIOS
