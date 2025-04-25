@@ -12,4 +12,4 @@ Llamar desde el fichero draw.pl a la función imprimir_frase_subrayada(Arbol).
   ficheros preprocesar.pl y prueba_2.pl:
     1 ?- preprocesar_en('Frase que se desea probar', X)
     X = [Lista de tokens de la frase].
-    2 ?- oracion(eng, X, [Lista de tokens de la frase], []),X=[Y], nl, transformar_frase_con_complementos(Y, FFinal).
+    2 ?- oracion(eng, X, [Lista de tokens de la frase], []),X=[Y], nl, transformar_frase_con_complementos(Y, FFinal), nl, imprimir_frase_subrayada(FFinal).
