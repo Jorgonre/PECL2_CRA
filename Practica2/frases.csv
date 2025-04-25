@@ -6,11 +6,11 @@ id;frase
 5;jose and hector eat chips and drink beer
 6;jose eats chips but mary prefers paella although hector drinks coffee and irene reads a novel
 7;irene sings and jumps while jose studies
-8;hector eats chips and drinks juice while jose sings and skips ',' although maria reads a novel
-9;jose ',' who is agile ',' climbs on the climbing wall in the afternoons
-10;jose ',' who is very delicate ',' eats only red apples
-11;the word processor ',' which is quite a powerful tool ',' is used to write documents
-12;the word processor is a very powerful tool for writing documents ',' but it is quite slow
+8;hector eats chips and drinks juice while jose sings and skips, although maria reads a novel
+9;jose, who is agile, climbs on the climbing wall in the afternoons
+10;jose, who is very delicate, eats only red apples
+11;the word processor, which is quite a powerful tool, is used to write documents
+12;the word processor is a very powerful tool for writing documents but it is quite slow
 13;the mouse that the cat caught was grey
 14;the man we saw yesterday was my neighbour
 15;juan plays football while pedro plays basketball
@@ -44,12 +44,12 @@ id;frase
 43;pedro and angela play table tennis on weekends
 44;diego goes skiing while martina enjoys snowboarding
 45;lucia has won the title of regional champion in artistic gymnastics
-46;alberto ',' who is very agile ',' practises parkour around the city
+46;alberto, who is very agile, practises parkour around the city
 47;teresa has won a gold medal in shooting
 48;miguel and sergio enjoy playing badminton after school
-49;alexis ',' who is very strong ',' trains for the wrestling championship
+49;alexis, who is very strong, trains for the wrestling championship
 50;the girl we greeted before was his exteammate
 51;the man that irene likes was very skillful
-52;ariana ',' who has great dexterity ',' plays volleyball on the beach
-53;the artificial intelligence ',' which is changing the world of sports ',' is very advanced
-54;the sports handbag ',' which is chinese ',' was imported last week
+52;ariana, who has great dexterity, plays volleyball on the beach
+53;the artificial intelligence, which is changing the world of sports, is very advanced
+54;the sports handbag, which is chinese, was imported last week
