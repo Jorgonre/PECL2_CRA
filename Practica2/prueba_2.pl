@@ -1308,6 +1308,9 @@ sustituir_cct_en_argumentos(Pos, Arity, Termino, _, Termino, _) :-
 
 unir_oraciones(ListaFrases, FraseUnida) :-
     flatten(ListaFrases, ListaFrasesAplanada),
+    (ListaFrasesAplanada=[O1] ->
+    FraseUnida = og(O1)
+    ;
     (ListaFrasesAplanada=[O1,O2] ->
     FraseUnida = og(O1,O2)
     ; (ListaFrasesAplanada=[O1,O2,O3] ->
@@ -1319,7 +1322,7 @@ unir_oraciones(ListaFrases, FraseUnida) :-
     FraseUnida = og(O1,O2,O3,O4,O5)
     ;(ListaFrasesAplanada=[O1,O2,O3,O4,O5,O6] ->
     FraseUnida = og(O1,O2,O3,O4,O5,O6)
-    ))))).
+    )))))).
 
 % Caso base: una lista vacía es una lista aplanada vacía.
 flatten([], []).
