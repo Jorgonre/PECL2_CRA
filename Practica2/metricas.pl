@@ -27,7 +27,7 @@ fe8('hector eats chips and drinks juice while jose sings and skips, although mar
 fe9('jose, who is agile, climbs on the climbing wall in the afternoons').
 fe10('jose, who is very delicate, eats only red apples').
 fe11('the word processor, which is quite a powerful tool, is used to write documents').
-fe12('the word processor is a very powerful tool for writing documents, but it is quite slow').
+fe12('the word processor is a very powerful tool for writing documents but it is quite slow').
 fe13('the mouse that the cat caught was grey').
 fe14('the man we saw yesterday was my neighbour').
 
@@ -63,14 +63,14 @@ f25('cristina and david are taking part in an international athletics competitio
 f26('santiago has beaten his personal record in weightlifting').
 f27('jorge and rocio compete in whitewater kayaking').
 f28('sofia has achieved a new record in freestyle swimming').
-f29('pedro and angela play table tennis on weekends').
+f29('pedro and angela play table tennis on weekends and have won several tournaments').
 f30('diego goes skiing while martina enjoys snowboarding').
 f31('lucia has won the title of regional champion in artistic gymnastics').
 f32('alberto, who is very agile, practises parkour around the city').
 f33('teresa has won a gold medal in shooting').
-f34('miguel and sergio enjoy playing badminton after school').
+f34('miguel enjoys playing badminton after school').
 f35('alexis, who is very strong, trains for the wrestling championship').
-f36('the girl we greeted before was his exteammate').
+f36('the girl we greeted before was his ex-teammate').
 f37('the man that irene likes was very skillful').
 f38('ariana, who has great dexterity, plays volleyball on the beach').
 f39('the artificial intelligence, which is changing the world of sports, is very advanced').
