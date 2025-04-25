@@ -426,7 +426,7 @@ n(chinese).
 n(week).
 n(girl).
 n(exgirlfriend).
-n(exteammate).
+n(ex-teammate).
 
 
 nombre_compuesto(climbing, wall).
@@ -522,6 +522,7 @@ verbo(eng, v(enjoys, G)) --> [enjoys, G], {gerundio(G) }.
 verbo(eng, v(goes, G)) --> [goes, G], {gerundio(G) }.
 verbo(eng, v(is, P)) --> [is, P], { pasado(P) }.
 verbo(eng, v(has, P)) --> [has, P], { pasado(P) }.
+verbo(eng, v(have, P)) --> [have, P], { pasado(P) }.
 verbo(eng, v(has, been ,P)) --> [has, been,P], { pasado(P) }.
 verbo(eng, v(was, P)) --> [was, P], { pasado(P) }.
 
@@ -551,6 +552,7 @@ v(dances).
 v(plays).
 v(practices).
 v(has).
+v(have).
 v(is).
 v(competes).
 v(runs).
