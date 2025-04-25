@@ -1,3 +1,8 @@
+:- module(flexion, [
+    pluralize_en/2,
+    singularize_en/2
+    
+]).
 :- use_module(library(csv)).
 
 % Declaramos el predicado dinámico para almacenar cada fila del CSV.

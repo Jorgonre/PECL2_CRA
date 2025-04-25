@@ -1,15 +1,15 @@
-:- module(traductor,
-          [ load_verb_db/1,
-            traducir_frase_es_en/2,
-            traducir_frase_en_es/2
-          ]).
+:- module(traductor, [
+    load_verb_db/1,
+    traducir_frase_es_en/2,
+    traducir_frase_en_es/2
+]).
 
 % ----------------------------------------------------------
 % DEPENDENCIAS
 % ----------------------------------------------------------
 :- use_module(library(csv)).          % csv_read_file/3
 :- use_module(preprocesar).           % preprocesar_es/2, preprocesar_en/2
-:- use_module(flexion).               % pluralize_en/2, pluralize/2, singularize_en/2
+:- use_module(flexion).
 
 % ----------------------------------------------------------
 % PREDICADOS DINÁMICOS
@@ -17,7 +17,8 @@
 :- dynamic verb_db/17.
 :- dynamic bilingual/2.
 :- dynamic bilingual_conj/5.
-
+bilingual_en_es(En, Es) :-
+    bilingual(Es, En).
 % ----------------------------------------------------------
 % AUXILIAR: extrae la raíz inglesa limpia
 % ----------------------------------------------------------
@@ -88,10 +89,14 @@ traducir_frase_en_es(FraseEn, FraseEs) :-
     maplist(traducir_token_en_es, ToksEn, ToksEs),
     atomic_list_concat(ToksEs, ' ', FraseEs).
 
-traducir_token_en_es(En, Es) :-
-    ( bilingual(Es, En)
-    -> true
-    ; singularize_en(En, Base), Base \== En, bilingual(Es, Base)
+traducir_token_en_es(En0, Es) :-
+    % 1) bajamos todo a minúsculas
+    downcase_atom(En0, En),
+    % 2) buscamos en el diccionario inverso
+    ( bilingual_en_es(En, Es)
+    % 3) si no hay match directo, probamos con singular (p.ej. "cats" -> "cat")
+    ; singularize_en(En, Base), Base \== En, bilingual_en_es(Base, Es)
+    % 4) si nada, la dejamos tal cual (en minúsculas)
     ; Es = En
     ).
 
@@ -1154,7 +1159,7 @@ bilingual(conceptualizar, conceptualize).
 bilingual(teorizar, theorize).
 bilingual(esquematizar, sketch).
 bilingual(bosquejar, outline).
-bilingual(graf?ar, graph).
+bilingual(grafiar, graph).
 bilingual(trazar, trace).
 bilingual(diseñar, design).
 bilingual(elaborar, elaborate).
@@ -1280,12 +1285,12 @@ bilingual(aceite, oil).
 bilingual(acera, sidewalk).
 bilingual(actor, actor).
 bilingual(adivinar, guess).
-bilingual(alegr?a, joy).
-bilingual(algod?n, cotton).
+bilingual(alegria, joy).
+bilingual(algodon, cotton).
 bilingual(almohada, pillow).
 bilingual(alquiler, rent).
 bilingual(amargo, bitter).
-bilingual(?ngulo, angle).
+bilingual(angulo, angle).
 bilingual(antiguo, ancient).
 bilingual(anunciar, announce).
 bilingual(apagar, turn_off).
@@ -1302,14 +1307,14 @@ bilingual(autopista, highway).
 bilingual(avanzar, advance).
 bilingual(avena, oats).
 bilingual(avestruz, ostrich).
-bilingual(azafr?n, saffron).
+bilingual(azafran, saffron).
 bilingual(bailar, dance).
-bilingual(balc?n, balcony).
+bilingual(balcon, balcony).
 bilingual(ballena, whale).
 bilingual(barro, mud).
-bilingual(b?scula, scale).
-bilingual(bast?n, cane).
-bilingual(bater?a, battery).
+bilingual(bascula, scale).
+bilingual(baston, cane).
+bilingual(bateria, battery).
 bilingual(beber, drink).
 bilingual(bello, beautiful).
 bilingual(bermudas, shorts).
@@ -1323,7 +1328,7 @@ bilingual(bolsa, bag).
 bilingual(bolsillo, pocket).
 bilingual(bomba, pump).
 bilingual(botella, bottle).
-bilingual(bot?n, button).
+bilingual(boton, button).
 bilingual(brillante, bright).
 bilingual(brisa, breeze).
 bilingual(broma, joke).
@@ -1333,18 +1338,18 @@ bilingual(bufanda, scarf).
 bilingual(burro, donkey).
 bilingual(caballo, horse).
 bilingual(cabra, goat).
-bilingual(caf?, coffee).
+bilingual(cafe, coffee).
 bilingual(calendario, calendar).
 bilingual(calma, calm).
 bilingual(calor, heat).
 bilingual(calvo, bald).
 bilingual(cama, bed).
-bilingual(cami?n, truck).
+bilingual(camion, truck).
 bilingual(campana, bell).
 bilingual(campo, field).
-bilingual(canci?n, song).
+bilingual(cancion, song).
 bilingual(candado, lock).
-bilingual(ca?a, cane).
+bilingual(caña, cane).
 bilingual(carne, meat).
 bilingual(carpeta, folder).
 bilingual(carro, wagon).
@@ -1352,7 +1357,7 @@ bilingual(carta, letter).
 bilingual(cartera, portfolio).
 bilingual(casa, house).
 bilingual(casco, helmet).
-bilingual(c?scara, shell).
+bilingual(cascara, shell).
 bilingual(casi, almost).
 bilingual(cena, dinner).
 bilingual(cerca, near).
@@ -1378,7 +1383,7 @@ bilingual(cocina, kitchen).
 bilingual(coche, car).
 bilingual(coco, coconut).
 bilingual(cohete, rocket).
-bilingual(coj?n, cushion).
+bilingual(cojon, cushion).
 bilingual(cola, tail).
 bilingual(colina, hill).
 bilingual(colmena, beehive).
@@ -1386,12 +1391,12 @@ bilingual(colonia, colony).
 bilingual(color, color).
 bilingual(cometa, kite).
 bilingual(comida, food).
-bilingual(comp?s, compass).
+bilingual(compas, compass).
 bilingual(compra, purchase).
-bilingual(com?n, common).
+bilingual(comun, common).
 bilingual(concha, shell).
 bilingual(concierto, concert).
-bilingual(conexi?n, connection).
+bilingual(conexion, connection).
 bilingual(confianza, trust).
 bilingual(congelar, freeze).
 bilingual(congreso, congress).
@@ -1400,7 +1405,7 @@ bilingual(contar, tell).
 bilingual(contra, against).
 bilingual(contrario, opposite).
 bilingual(corbata, tie).
-bilingual(coraz?n, heart).
+bilingual(corazon, heart).
 bilingual(correr, run).
 bilingual(correos, mail).
 bilingual(cortar, cut).
@@ -1409,7 +1414,7 @@ bilingual(crecer, grow).
 bilingual(creer, believe).
 bilingual(crema, cream).
 bilingual(cuadro, frame).
-bilingual(cu?nto, how_much).
+bilingual(cuanto, how_much).
 bilingual(cuello, neck).
 bilingual(cuento, story).
 bilingual(cuerpo, body).
@@ -1460,17 +1465,17 @@ bilingual(doctor, doctor).
 bilingual(doler, hurt).
 bilingual(dormir, sleep).
 bilingual(dosis, dose).
-bilingual(drag?n, dragon).
+bilingual(dragon, dragon).
 bilingual(dulce, sweet).
 bilingual(durante, during).
 bilingual(duro, hard).
 bilingual(edad, age).
 bilingual(edificio, building).
-bilingual(educaci?n, education).
+bilingual(educacion, education).
 bilingual(efecto, effect).
 bilingual(ejemplo, example).
-bilingual(elecci?n, election).
-bilingual(el?ctrico, electric).
+bilingual(eleccion, election).
+bilingual(electrico, electric).
 bilingual(elegante, elegant).
 bilingual(elefante, elephant).
 bilingual(ella, she).
@@ -1478,7 +1483,7 @@ bilingual(ellos, they).
 bilingual(embarazada, pregnant).
 bilingual(embarque, boarding).
 bilingual(embudo, funnel).
-bilingual(emoci?n, emotion).
+bilingual(emocion, emotion).
 bilingual(empezar, start).
 bilingual(empleado, employee).
 bilingual(empresa, company).
@@ -1512,7 +1517,7 @@ bilingual(estudio, study).
 bilingual(exito, success).
 bilingual(experiencia, experience).
 bilingual(explicar, explain).
-bilingual(exportaci?n, export).
+bilingual(exportacion, export).
 bilingual(extranjero, foreign).
 bilingual(facil, easy).
 bilingual(facilmente, easily).
@@ -1552,7 +1557,7 @@ bilingual(gancho, hook).
 bilingual(ganso, goose).
 bilingual(gato, cat).
 bilingual(gaviota, seagull).
-bilingual(geograf?a, geography).
+bilingual(geografia, geography).
 bilingual(gimnasio, gym).
 bilingual(girar, turn).
 bilingual(giro, turn).
@@ -1575,9 +1580,9 @@ bilingual(gusano, worm).
 bilingual(gustar, like).
 bilingual(habilidad, skill).
 bilingual(habitante, inhabitant).
-bilingual(habitaci?n, room).
+bilingual(habitacion, room).
 bilingual(hacer, do).
-bilingual(hac?a, used_to_do).
+bilingual(hacia, used_to_do).
 bilingual(hada, fairy).
 bilingual(hambre, hunger).
 bilingual(harto, full).
@@ -1599,7 +1604,6 @@ bilingual(hoja, leaf).
 bilingual(hojas, pages).
 bilingual(hola, hello).
 bilingual(hombrecito, small_man).
-bilingual(honduras, Honduras).
 bilingual(hongo, mushroom).
 bilingual(horario, schedule).
 bilingual(hora, hour).
@@ -1679,7 +1683,7 @@ bilingual(largo, long).
 bilingual(lata, can).
 bilingual(lavar, wash).
 bilingual(leyenda, legend).
-bilingual(librer?a, bookstore).
+bilingual(libreria, bookstore).
 bilingual(libro, book).
 bilingual(licor, liquor).
 bilingual(liga, league).
@@ -1705,7 +1709,7 @@ bilingual(marcha, march).
 bilingual(marco, frame).
 bilingual(mariposa, butterfly).
 bilingual(marisco, seafood).
-bilingual(marzo, March).
+bilingual(marzo, march).
 bilingual(masa, dough).
 bilingual(mascara, mask).
 bilingual(matar, kill).
@@ -1743,7 +1747,7 @@ bilingual(ministerio, ministry).
 bilingual(ministro, minister).
 bilingual(mirada, gaze).
 bilingual(mirar, look).
-bilingual(misi?n, mission).
+bilingual(mision, mission).
 bilingual(mitad, half).
 bilingual(moda, fashion).
 bilingual(modelo, model).
@@ -1796,7 +1800,7 @@ bilingual(ocasion, occasion).
 bilingual(occidente, west).
 bilingual(ocho, eight).
 bilingual(ocultar, hide).
-bilingual(octubre, October).
+bilingual(octubre, october).
 bilingual(ocupar, occupy).
 bilingual(ocurrir, happen).
 bilingual(oferta, offer).
@@ -1829,9 +1833,9 @@ bilingual(palabra, word).
 bilingual(palacio, palace).
 bilingual(paloma, dove).
 bilingual(pan, bread).
-bilingual(panader?a, bakery).
+bilingual(panaderia, bakery).
 bilingual(panorama, panorama).
-bilingual(pap?, dad).
+bilingual(papa, dad).
 bilingual(papel, paper).
 bilingual(papelera, paper_bin).
 bilingual(paraguas, umbrella).
@@ -1863,7 +1867,7 @@ bilingual(pena, pity).
 bilingual(pencil, pencil).
 bilingual(pendiente, earring).
 bilingual(pensar, think).
-bilingual(peque?o, small).
+bilingual(pequeño, small).
 bilingual(percha, hanger).
 bilingual(perder, lose).
 bilingual(perdida, loss).
@@ -1900,36 +1904,36 @@ bilingual(playa, beach).
 bilingual(plaza, square).
 bilingual(plomo, lead).
 bilingual(pluma, pen).
-bilingual(poblaci?n, population).
+bilingual(poblacion, population).
 bilingual(pobre, poor).
 bilingual(poco, little).
 bilingual(poema, poem).
-bilingual(poes?a, poetry).
+bilingual(poesia, poetry).
 bilingual(poeta, poet).
-bilingual(pol?tica, politics).
+bilingual(politica, politics).
 bilingual(pollo, chicken).
 bilingual(polvo, dust).
-bilingual(p?lvora, gunpowder).
-bilingual(p?mulo, cheekbone).
+bilingual(polvora, gunpowder).
+bilingual(pomulo, cheekbone).
 bilingual(poner, put).
 bilingual(por, by).
-bilingual(porci?n, portion).
+bilingual(porcion, portion).
 bilingual(porque, because).
-bilingual(port?til, laptop).
+bilingual(portatil, laptop).
 bilingual(portal, portal).
 bilingual(poste, post).
 bilingual(postre, dessert).
 bilingual(potencia, power).
 bilingual(pozo, well).
 bilingual(precio, price).
-bilingual(precipitaci?n, precipitation).
-bilingual(precisi?n, precision).
-bilingual(predicci?n, prediction).
+bilingual(precipitacion, precipitation).
+bilingual(precision, precision).
+bilingual(prediccion, prediction).
 bilingual(preferir, prefer).
 bilingual(pregunta, question).
 bilingual(prensa, press).
 bilingual(presente, present).
-bilingual(presi?n, pressure).
+bilingual(presion, pressure).
 bilingual(prestar, lend).
 bilingual(presupuesto, budget).
 bilingual(prevenir, prevent).
@@ -1943,25 +1947,25 @@ bilingual(producto, product).
 bilingual(profesor, teacher).
 bilingual(programa, program).
 bilingual(progreso, progress).
-bilingual(prohibici?n, prohibition).
+bilingual(prohibicion, prohibition).
 bilingual(prolongar, prolong).
 bilingual(promesa, promise).
-bilingual(promoci?n, promotion).
+bilingual(promocion, promotion).
 bilingual(pronombre, pronoun).
 bilingual(propiedad, property).
 bilingual(propuesta, proposal).
 bilingual(proteger, protect).
-bilingual(pr?ximo, next).
-bilingual(publicaci?n, publication).
-bilingual(p?blico, public).
+bilingual(proximo, next).
+bilingual(publicacion, publication).
+bilingual(publico, public).
 bilingual(puente, bridge).
 bilingual(puerta, door).
 bilingual(pues, then).
 bilingual(pulgar, thumb).
-bilingual(pulm?n, lung).
+bilingual(pulmon, lung).
 bilingual(punta, tip).
 bilingual(punto, point).
-bilingual(pu?o, fist).
+bilingual(puño, fist).
 bilingual(pura, pure).
 bilingual(puro, pure).
 bilingual(puso, put).
@@ -1969,21 +1973,21 @@ bilingual(quedar, stay).
 bilingual(quedarse, stay).
 bilingual(querer, want).
 bilingual(queso, cheese).
-bilingual(qui?n, who).
-bilingual(qu?mico, chemical).
+bilingual(quien, who).
+bilingual(quimico, chemical).
 bilingual(quince, fifteen).
 bilingual(quinientos, five_hundred).
 bilingual(quita, take_away).
 bilingual(quitar, remove).
 bilingual(rabia, rage).
-bilingual(r?pido, fast).
+bilingual(rapido, fast).
 bilingual(raro, rare).
-bilingual(raz?n, reason).
+bilingual(razon, reason).
 bilingual(receta, recipe).
 bilingual(recibir, receive).
 bilingual(reciclaje, recycling).
 bilingual(recoger, pick_up).
-bilingual(recomendaci?n, recommendation).
+bilingual(recomendacion, recommendation).
 bilingual(recorrido, route).
 bilingual(recto, straight).
 bilingual(recuerdo, memory).
@@ -1994,33 +1998,33 @@ bilingual(reflejar, reflect).
 bilingual(refugio, shelter).
 bilingual(regalar, give).
 bilingual(regalo, gift).
-bilingual(regi?n, region).
+bilingual(region, region).
 bilingual(registro, record).
 bilingual(regla, ruler).
 bilingual(reino, kingdom).
-bilingual(re?r, smile).
-bilingual(relaci?n, relationship).
+bilingual(reir, smile).
+bilingual(relacion, relationship).
 bilingual(relato, story).
-bilingual(religi?n, religion).
+bilingual(religion, religion).
 bilingual(relleno, stuffing).
 bilingual(reloj, clock).
 bilingual(remedio, remedy).
 bilingual(remolque, trail).
-bilingual(renovaci?n, renewal).
-bilingual(reparaci?n, repair).
+bilingual(renovacion, renewal).
+bilingual(reparacion, repair).
 bilingual(repartir, distribute).
 bilingual(repente, suddenly).
 bilingual(repetir, repeat).
-bilingual(rep?blica, rep?blica).
+bilingual(republica, rep?blica).
 bilingual(respuesta, answer).
 bilingual(restaurante, restaurant).
 bilingual(resumen, summary).
 bilingual(retirar, remove).
-bilingual(reuni?n, meeting).
-bilingual(revisi?n, revision).
+bilingual(reunion, meeting).
+bilingual(revision, revision).
 bilingual(revolver, stir).
 bilingual(rey, king).
-bilingual(r?o, river).
+bilingual(rio, river).
 bilingual(riqueza, wealth).
 bilingual(rodilla, knee).
 bilingual(rojo, red).
@@ -2064,7 +2068,7 @@ bilingual(sentarse, sit_down).
 bilingual(sentido, meaning).
 bilingual(sentimiento, feeling).
 bilingual(se?al, signal).
-bilingual(septiembre, September).
+bilingual(septiembre, september).
 bilingual(ser, be).
 bilingual(serpiente, snake).
 bilingual(servicio, service).
@@ -2297,7 +2301,7 @@ bilingual(viajar, travel).
 bilingual(vibrar, vibrate).
 bilingual(vidrio, glass).
 bilingual(viejo, old).
-bilingual(viernes, Friday).
+bilingual(viernes, friday).
 bilingual(viento, wind).
 bilingual(viol?n, violin).
 bilingual(violencia, violence).
@@ -3277,37 +3281,37 @@ bilingual(dise?o, design).
 bilingual(disfraz, disguise).
 bilingual(disgusto, displeasure).
 bilingual(disparidad, disparity).
-bilingual(disposici?n, disposition).
+bilingual(disposicion, disposition).
 bilingual(disputa, dispute).
 bilingual(distancia, distance).
-bilingual(distinci?n, distinction).
-bilingual(distracci?n, distraction).
-bilingual(diversi?n, fun).
+bilingual(distincion, distinction).
+bilingual(distraccion, distraction).
+bilingual(diversion, fun).
 bilingual(divinidad, divinity).
-bilingual(divisi?n, division).
-bilingual(divisi?n, division).
+bilingual(division, division).
+bilingual(division, division).
 bilingual(divorcio, divorce).
 bilingual(doble, double).
-bilingual(d?lar, dollar).
+bilingual(dolar, dollar).
 bilingual(domicilio, address).
-bilingual(dominaci?n, domination).
-bilingual(domin?, domino).
-bilingual(donaci?n, donation).
+bilingual(dominacion, domination).
+bilingual(domino, domino).
+bilingual(donacion, donation).
 bilingual(donante, donor).
-bilingual(donaci?n, donation).
+bilingual(donacion, donation).
 bilingual(donde, where).
 bilingual(dormitorio, bedroom).
 bilingual(dormitorio, bedroom).
-bilingual(drag?n, dragon).
+bilingual(dragon, dragon).
 bilingual(dramaturgo, playwright).
 bilingual(drama, drama).
 bilingual(drogadicto, drug_addict).
 bilingual(duda, doubt).
 bilingual(dulce, sweet).
-bilingual(duraci?n, duration).
+bilingual(duracion, duration).
 bilingual(dureza, hardness).
 bilingual(duro, hard).
-bilingual(educaci?n, education).
+bilingual(educacion, education).
 bilingual(efecto, effect).
 bilingual(efectividad, effectiveness).
 bilingual(español, ingles).
@@ -3321,7 +3325,7 @@ bilingual(adustez, sternness).
 bilingual(aflorar, emerge).
 bilingual(agazapar, crouch).
 bilingual(agravante, aggravating).
-bilingual(alb?ndiga, meatball).
+bilingual(albondiga, meatball).
 bilingual(albor, daybreak).
 bilingual(alcoba, bedroom).
 bilingual(alcuza, oilcan).
@@ -3349,7 +3353,7 @@ bilingual(atalaje, harness).
 bilingual(atavio, attire).
 bilingual(aterciopelado, velvety).
 bilingual(atolondrado, dazed).
-bilingual(at?n, tuna).
+bilingual(atun, tuna).
 bilingual(avellanedo, hazel).
 bilingual(avispero, waspsnest).
 bilingual(azabache, jet).
@@ -3358,14 +3362,14 @@ bilingual(badea, watermelon).
 bilingual(bajel, ship).
 bilingual(barranca, ravine).
 bilingual(berberecho, cockle).
-bilingual(bermell?n, vermilion).
+bilingual(bermellon, vermilion).
 bilingual(bisojo, cross-eyed).
 bilingual(biznieto, great-grandson).
 bilingual(bocanada, gust).
 bilingual(bochorno, swelter).
 bilingual(borla, tassel).
 bilingual(bostezar, yawn).
-bilingual(bot?n, loot).
+bilingual(boton, loot).
 bilingual(bravura, bravery).
 bilingual(brega, struggle).
 bilingual(brisca, cardgame).
@@ -3454,7 +3458,7 @@ bilingual(cerrado, closed).
 bilingual(vacaciones, vacation).
 bilingual(playa, beach).
 bilingual(montana, mountain).
-bilingual(r?o, river).
+bilingual(rio, river).
 bilingual(mar, sea).
 bilingual(cielo, sky).
 bilingual(estrellas, stars).
@@ -3657,7 +3661,7 @@ bilingual(espia, spy).
 bilingual(informante, informant).
 bilingual(delator, informant).
 bilingual(chivato, snitch).
-bilingual(sopl?n, whistleblower).
+bilingual(soplon, whistleblower).
 bilingual(confidente, confidant).
 bilingual(testigo, witness).
 bilingual(declarante, declarant).
@@ -3674,11 +3678,11 @@ bilingual(causante, causer).
 bilingual(instigador, instigator).
 bilingual(autor, author).
 bilingual(coautor, coauthor).
-bilingual(c?mplice, accomplice).
+bilingual(complice, accomplice).
 bilingual(encubridor, concealer).
 bilingual(delator, informer).
 bilingual(chivato, snitch).
-bilingual(sopl?n, whistleblower).
+bilingual(soplon, whistleblower).
 bilingual(confidente, confidant).
 bilingual(testigo, witness).
 bilingual(declarante, declarant).
@@ -3695,7 +3699,7 @@ bilingual(causante, causer).
 bilingual(instigador, instigator).
 bilingual(autor, author).
 bilingual(coautor, coauthor).
-bilingual(c?mplice, accomplice).
+bilingual(complice, accomplice).
 bilingual(encubridor, concealer).
 bilingual(informante, informant).
 bilingual(testigo, witness).
@@ -4300,13 +4304,17 @@ bilingual(aprobar, approve).
 bilingual(aprovechar, takeadvantage).
 bilingual(apuesta, bet).
 bilingual(aquel, that).
-bilingual(ara?a, spider).
+bilingual(araña, spider).
 bilingual(arbol, tree).
 bilingual(archivo, file).
 bilingual(arena, sand).
 bilingual(argumento, argument).
 bilingual(aroma, aroma).
 bilingual(arpa, harp).
+bilingual(hola, hello).     
+bilingual(como,  how).
+bilingual(estas, are).
+bilingual(tu,    you).
 bilingual(arreglo, arrangement).
 bilingual(arrepentirse, regret).
 bilingual(arroz, rice).
@@ -4353,7 +4361,7 @@ bilingual(bala, bullet).
 bilingual(balcon, balcony).
 bilingual(balon, ball).
 bilingual(banco, bank).
-bilingual(ba?ar, bath).
+bilingual(bañar, bath).
 bilingual(bar, bar).
 bilingual(barato, cheap).
 bilingual(barba, beard).
@@ -4536,7 +4544,7 @@ bilingual(barniz, varnish).
 bilingual(barrio, neighborhood).
 bilingual(bateria, battery).
 bilingual(bebida, drink).
-bilingual(beb?, baby).
+bilingual(bebe, baby).
 bilingual(belleza, beauty).
 bilingual(besar, kiss).
 bilingual(bien, well).
@@ -4749,10 +4757,10 @@ bilingual(encontrar, find).
 bilingual(energia, energy).
 bilingual(enfermedad, illness).
 bilingual(enfermero, nurse).
-bilingual(enga?o, trick).
+bilingual(engaño, trick).
 bilingual(enojado, angry).
 bilingual(enorme, huge).
-bilingual(ense?ar, teach).
+bilingual(enseñar, teach).
 bilingual(entender, understand).
 bilingual(entonces, then).
 bilingual(entrada, entrance).
@@ -4829,7 +4837,7 @@ bilingual(fondo, background).
 bilingual(forma, form).
 bilingual(fortuna, fortune).
 bilingual(fraccion, fraction).
-bilingual(franc?s, french).
+bilingual(frances, french).
 bilingual(frank, franco).
 bilingual(frasco, bottle).
 bilingual(frase, phrase).
@@ -5019,7 +5027,7 @@ bilingual(marfil, ivory).
 bilingual(margarita, daisy).
 bilingual(marron, brown).
 bilingual(martillo, hammer).
-bilingual(marzo, march).
+
 bilingual(masa, mass).
 bilingual(mascota, pet).
 bilingual(mas, more).
@@ -5153,7 +5161,7 @@ bilingual(organo, organ).
 bilingual(oro, gold).
 bilingual(oscuridad, darkness).
 bilingual(oso, bear).
-bilingual(oto?o, autumn).
+bilingual(otoño, autumn).
 bilingual(otro, other).
 bilingual(oveja, sheep).
 bilingual(oxigeno, oxygen).
@@ -5281,7 +5289,7 @@ bilingual(quimica, chemistry).
 bilingual(quince, fifteen).
 bilingual(quitar, remove).
 bilingual(rabo, tail).
-bilingual(r?pido, quick).
+bilingual(rapido, quick).
 bilingual(rata, rat).
 bilingual(raton, mouse).
 bilingual(razon, reason).
@@ -5466,7 +5474,7 @@ bilingual(todo, all).
 bilingual(tomate, tomato).
 bilingual(tomar, take).
 bilingual(tonel, barrel).
-bilingual(topico, clich?).
+bilingual(topico, cliche).
 bilingual(tormenta, storm).
 bilingual(torneo, tournament).
 bilingual(toro, bull).
@@ -5538,7 +5546,7 @@ bilingual(victoria, victory).
 bilingual(vida, life).
 bilingual(vidrio, glass).
 bilingual(viejo, old).
-bilingual(viernes, friday).
+
 bilingual(viento, wind).
 bilingual(vientre, belly).
 bilingual(vigilancia, vigilance).
