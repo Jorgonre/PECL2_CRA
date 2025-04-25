@@ -49,3 +49,12 @@ Características:
 Ejecución:
   Generar oraciones: generar_oracion('el','niño','alto', s, m, 'ser', '3s', Or1). generar_oracion('la','niña','pequeño', p, f, 'ser','1p', Or2).
 
+  ### Para la mejora de traductor
+
+Prerequisitos:
+  Carga el módulo [traductor].
+  Cargar base de datos si tienes el CSV: load_verb_db('spaninglishcsv.csv').
+
+Características:
+  - Traducir de ingles a español -> traducir_frase_en_es('I am Diego and you',T).
+  - Traducir de español a ingles -> traducir_frase_es_en('Yo como paella y tu',T).
