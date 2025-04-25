@@ -1,6 +1,8 @@
-# No hemos sido capaces de solucionar el problema que teníamos a la hora de ejecutar los predicados preprocesar_en\2 y oracion\4 conjuntamente, por lo que aquí mostramos como se realizan ciertas ejecuciones.
+### No hemos sido capaces de solucionar el problema que teníamos a la hora de ejecutar los predicados preprocesar_en\2 y oracion\4 conjuntamente, por lo que aquí mostramos como se realizan ciertas ejecuciones.
 
-#### Por el problema que se menciona arriba para el empleo de la opción 3 (Analisis sintactico) del menú se debe introducir la frase tokenizada. Para llevar a cabo dicha tokenización hemos dispuesto dos formas. **INCISO IMPORTANTE, SE DEBEN COPIAR LOS CORCHETES TAMBIÉN**:
+#### Ayuda para el uso del menu:
+
+Por el problema que se menciona arriba para el empleo de la opción 3 (Analisis sintactico) del menú se debe introducir la frase tokenizada. Para llevar a cabo dicha tokenización hemos dispuesto dos formas. **INCISO IMPORTANTE, SE DEBEN COPIAR LOS CORCHETES TAMBIÉN**:
   1. Llamar previamente a la opción 1 (Preprocesar English) que ya nos devuelve entre corchetes los tokens necesarios. Habría que copiar el resultado devuelto y pegarlo en la entrada que espera la llamada de la opción 3 (Análisis sintáctico).
      Adjunto ejemplo gráfico:
      ![imagen](https://github.com/user-attachments/assets/e7a1e0f8-5dc2-412e-8b82-985750e7b5ed)
@@ -24,6 +26,6 @@ Llamar desde el fichero draw.pl a la función imprimir_frase_subrayada(Arbol).
 
 #### Para la ejecución de la mejora de "Oraciones en japonés": 
 
-  Se debe llamar a un predicado oracion_japones desde dentro del archivo prueba_2.pl. A continuación adjunto un ejemplo de una llamada para esta mejora:
+Se debe llamar a un predicado oracion_japones desde dentro del archivo prueba_2.pl. A continuación adjunto un ejemplo de una llamada para esta mejora:
     oracion_japones(jpn, X, ["HARUKO", wa, hana, ga, suki, soushite, koohii, ga, kirai],[]).
 
