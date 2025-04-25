@@ -3,7 +3,8 @@
 :- ensure_loaded('traductorGoogle.pl').
 :- use_module(prueba_2,  [oracion/4]).
 :- use_module(draw,      [draw/1]).
-:- use_module(draw_html, [draw_html/2]).
+:- use_module(draw_html, [draw_html/2, draw_html_list/2]).
+
 :- use_module(preprocesar, []).
 
 :- dynamic current_lang/1.
@@ -128,17 +129,16 @@ do_analysis :-
     writeln('Introduce la lista de tokens (ej. [el, gato, duerme]):'),
     read(Toks),
     ( prueba_2:oracion(eng, Raw0, Toks, []) ->
-        ( Raw0 = [F|_] -> Flat = F ; Flat = Raw0 ),
         normalise_trees(Raw0, Trees0),
         close_list(Trees0, Trees),
-        analysis_menu(Trees)
+        analysis_menu(Toks, Trees)
     ; writeln('No se pudo analizar.')
     ).
 
 %% ----------------------------
 %% Sub-menú para los árboles analizados
 %% ----------------------------
-analysis_menu(Trees) :-
+analysis_menu(Toks,Trees) :-
     repeat,
       nl, writeln('------ ANALISIS ------'),
       writeln(' 1) Mostrar arbol ASCII'),
@@ -147,31 +147,32 @@ analysis_menu(Trees) :-
       writeln(' 0) Volver'),
       write('Opcion: '), read_choice(Op),
       ( Op =:= 0 -> !
-      ; run_analysis_option(Op, Trees), fail
+      ; run_analysis_option(Op, Toks, Trees), fail
       ).
 
-run_analysis_option(1, Trees) :-
+run_analysis_option(1, _Toks, Trees) :-
     forall(member(T, Trees),
       ( nl, 
       Trees = [T],
       prueba_2:unir_oraciones(T, U),
       draw:draw(U), nl )
     ).
-run_analysis_option(2, Trees) :-
-    forall(nth1(I, Trees, T),
-      ( format('Generando subrayado_~w.html...~n',[I]),
-        format(atom(Base),'subrayado_~w',[I]),
-        draw_html:draw_html(T, Base)
-      )
-    ).
-run_analysis_option(3, Trees) :-
-    writeln(Trees),
-    format('Estructura Prolog resultante:~n~n'),
-    forall(member(Tree, Trees),
-        ( portray_clause(Tree), nl )
-    ).
+% Ahora llamamos a draw_html_list sobre toda la lista de tokens
+run_analysis_option(2, Toks, _Trees) :-
+    writeln('Generando HTML subrayado...'),
+    draw_html:draw_html_list(Toks, subrayado),
+    writeln('HTML generados: subrayado_1.html, subrayado_2.html, ...'), !.
 
-run_analysis_option(_, _) :-
+
+
+run_analysis_option(3, _Toks, Trees) :-
+     writeln(Trees),
+     format('Estructura Prolog resultante:~n~n'),
+     forall(member(Tree, Trees),
+         ( portray_clause(Tree), nl )
+     ).
+
+run_analysis_option(_, _,_) :-
     writeln('Opcion no valida.').
 
 read_choice(N) :-

@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<style>
+ table.tree{border-collapse:collapse;width:100%;}
+ table.tree td{text-align:center;padding:4px;font-family:sans-serif;}
+ tr.words td{background:#c2e7ff;font-weight:bold;}
+ tr.words td.subj{background:#d1e7dd;}
+ tr.words td.pred{background:#f8d7da;}
+ tr.tags  td{background:#ffe599;}
+ tr.cats  td{border-top:2px solid #333;}
+ td.highlight { outline: 2px dashed orange; }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('td[data-tag]').forEach(td => {
+    td.addEventListener('mouseover', () => {
+      document.querySelectorAll(`td[data-tag="${td.dataset.tag}"]`)
+              .forEach(x => x.classList.add('highlight'));
+    });
+    td.addEventListener('mouseout', () => {
+      document.querySelectorAll(`td[data-tag="${td.dataset.tag}"]`)
+              .forEach(x => x.classList.remove('highlight'));
+    });
+    td.addEventListener('click', () => {
+      const idxs = Array.from(document
+        .querySelectorAll(`td[data-tag="${td.dataset.tag}"]`))
+        .map(c => parseInt(c.dataset.index));
+      alert(`Etiqueta “${td.dataset.tag}”: índices ${Math.min(...idxs)}–${Math.max(...idxs)}`);
+    });
+  });
+  document.querySelectorAll('td.cats').forEach(td =>
+    td.addEventListener('click', () =>
+      alert(`Rango ${td.dataset.from}–${td.dataset.to}: ${td.textContent}`)
+    )
+  );
+});
+</script>
+</head><body><table class="tree">
+<tr class="words"><td class="0<1->subj;pred" data-index="0" data-tag="n_p" style="border-right:3px solid #333">ariana</td><td class="1<1->subj;pred" data-index="1" data-tag="v">plays</td><td class="2<1->subj;pred" data-index="2" data-tag="n/CD">volleyball</td><td class="3<1->subj;pred" data-index="3" data-tag="prep/CCL">on</td><td class="4<1->subj;pred" data-index="4" data-tag="det">the</td><td class="5<1->subj;pred" data-index="5" data-tag="n">beach</td></tr>
+<tr class="tags"><td class="0<1->subj;pred" data-index="0" data-tag="n_p" style="border-right:3px solid #333">n_p</td><td class="1<1->subj;pred" data-index="1" data-tag="v">v</td><td class="2<1->subj;pred" data-index="2" data-tag="n/CD">n/CD</td><td class="3<1->subj;pred" data-index="3" data-tag="prep/CCL">prep/CCL</td><td class="4<1->subj;pred" data-index="4" data-tag="det">det</td><td class="5<1->subj;pred" data-index="5" data-tag="n">n</td></tr>
+<tr class="cats"><td class="cats 0<1->subj;pred" data-from="0" data-to="0" colspan="1">SN / Sujeto</td><td class="cats 1<1->subj;pred" data-from="1" data-to="5" colspan="5">SV / Predicado</td></tr></table></body></html>
