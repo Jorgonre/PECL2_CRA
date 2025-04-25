@@ -169,20 +169,21 @@ pluralize(Singular, Plural) :-
 
 singularize(Plural, Singular) :-
     atom_chars(Plural, Chars),
-    (   % Caso: termina en "ces" -> originalmente terminaba en "z"
+    (   % 1) termina en "ces" -> singular con "z"
         append(BaseChars, ['c','e','s'], Chars)
     ->  atom_chars(Base, BaseChars),
         atom_concat(Base, 'z', Singular)
-    ;   % Caso: termina en "s" y la penúltima letra es vocal (regla de pluralización de vocal + "s")
-        append(BaseChars, [V, 's'], Chars),
-        is_vowel(V)
+    ;   % 2) termina en vocal + "s" -> quitar sólo la "s"
+        append(BaseChars, ['s'], Chars),
+        last(BaseChars, V), is_vowel(V)
     ->  atom_chars(Singular, BaseChars)
-    ;   % Caso: termina en "es" -> eliminar "es"
+    ;   % 3) termina en "es" -> quitar "es"
         append(BaseChars, ['e','s'], Chars)
     ->  atom_chars(Singular, BaseChars)
-    ;   % Si no cumple ningún patrón, se deja igual.
+    ;   % resto de casos
         Singular = Plural
     ).
+
 
 % is_vowel(+Char)
 %

@@ -37,3 +37,6 @@ feminine_to_masculine_en('waitress', MascEn).
 % Generar oraciones:
 generar_oracion('el','niño','alto', s, m, 'ser',   '3s', Or1).
 generar_oracion('la','niña','pequeño', p, f, 'ser','1p', Or2).
+
+
+Para la generación del html en el menu len algunas frases sale un error al finalizar pero los html se generan correctamente y los analiza bien.
