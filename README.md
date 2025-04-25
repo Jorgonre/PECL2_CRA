@@ -6,6 +6,7 @@ Por el problema que se menciona arriba para el empleo de la opción 3 (Analisis 
   1. Llamar previamente a la opción 1 (Preprocesar English) que ya nos devuelve entre corchetes los tokens necesarios. Habría que copiar el resultado
      devuelto y pegarlo en la entrada que espera la llamada de la opción 3 (Análisis sintáctico).
      Adjunto ejemplo gráfico:
+     
        ![imagen](https://github.com/user-attachments/assets/e7a1e0f8-5dc2-412e-8b82-985750e7b5ed)
 
   3. Se ha dejado preparado también un archivo.csv (artificial.csv) que contiene todas las frases tokenizadas de la misma forma que las dejaría la opción
@@ -17,6 +18,7 @@ Por el problema que se menciona arriba para el empleo de la opción 3 (Analisis 
 Llamar desde el fichero draw.pl a la función imprimir_frase_subrayada(Arbol).
   El árbol será una frase ya analizada y transformada para que contenga los complementos
   Ejemplos de Arbol:
+  
     o(g_nom_prop(n_p(jose)),gv(v(climbs),ccl(gp(prep(on))),ccl(gn(det(the),n(climbing_wall))),cct(gp(prep(in))),cct(gn(det(the),n(afternoons)))))
     
     o(g_nom_prop(n_p(jose)),gv(v(studies),cd(gn(n(philosophy)))))
@@ -32,6 +34,7 @@ Llamar desde el fichero draw.pl a la función imprimir_frase_subrayada(Arbol).
 ### Para la ejecución de la mejora de "Oraciones en japonés": 
 
 Se debe llamar a un predicado oracion_japones desde dentro del archivo prueba_2.pl. A continuación adjunto un ejemplo de una llamada para esta mejora:
+
     oracion_japones(jpn, X, ["HARUKO", wa, hana, ga, suki, soushite, koohii, ga, kirai],[]).
 
 ### Para la mejora de la flexion:
