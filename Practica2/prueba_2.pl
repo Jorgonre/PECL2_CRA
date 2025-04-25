@@ -96,10 +96,11 @@ oracion_con_subordinada(eng, [o(Suj, GVSub), o(Suj, GVMain)]) -->
     g_verbal(eng, GVMain).
 
 
-oracion_con_subordinada_implicita(eng, [o(SujMain, GVMain), o(SujRel, GVSub)]) -->
-    (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
-    (g_relativos(eng, rel(_)); []),  % Permite que se omita el relativo
-    oracion_simple(eng, o(SujRel, GVSub)),
+oracion_con_subordinada_implicita(eng, [o(A, GVMain), o(S, GVSubAdjusted)]) -->
+    g_nominal(eng, A), 
+    (g_relativos(eng, rel(_)) ; []),
+    oracion_simple(eng, o(S, gv(V, gadv(Adv)))),
+    { GVSubAdjusted = gv(V, gadv(Adv), A) },
     g_verbal(eng, GVMain).
 
 % Descompone un sujeto compuesto en una lista de sujetos individuales
