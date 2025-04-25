@@ -923,7 +923,7 @@ tiempo((gp(prep(on)),gn(n(weekends)))).
 
 % Detecta el complemento directo recorriendo todos los hijos del gv
 detectar_complemento_directo(o(_, GV), CD) :-
-    write('Procesando GV: '), writeln(GV), % Depuración
+    %write('Procesando GV: '), writeln(GV), % Depuración
     buscar_gn_en_termino(GV, CD), !.
 
 % Caso en el que no hay complemento directo
@@ -931,7 +931,7 @@ detectar_complemento_directo(_, none).
 
 % Busca un gn en un término compuesto
 buscar_gn_en_termino(Termino, CD) :-
-    write('Procesando término: '), writeln(Termino), % Depuración
+    %write('Procesando término: '), writeln(Termino), % Depuración
     functor(Termino, _, Arity), % Obtiene el número de argumentos del término
     buscar_en_argumentos_CD(1, Arity, Termino, CD).
 

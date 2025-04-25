@@ -12,9 +12,9 @@ draw_html(RawTree, Base) :-
     -> TrueTree = Tree
     ;  TrueTree = RawTree
     ),
-    ( compound_name_arity(TrueTree,_,2)
+    ( catch(compound_name_arity(TrueTree,_,2),_,fail)
     -> draw_html_transformed(TrueTree, Base)
-    ;  format('Aviso: ~w no es binario, no dibujo.~n',[TrueTree])
+    ;  true
     ).
 
 % ------------------------------
