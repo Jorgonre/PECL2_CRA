@@ -2223,7 +2223,7 @@ bilingual(trajimos, we_brought).
 bilingual(tranquilo, quiet).
 bilingual(transporte, transport).
 bilingual(tras, after).
-bilingual(excompañero,exteammate).
+bilingual(ex-compañero,exteammate).
 bilingual(trasero, rear).
 bilingual(tratado, treaty).
 bilingual(trato, dealing).
