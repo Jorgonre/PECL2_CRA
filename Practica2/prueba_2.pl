@@ -96,10 +96,11 @@ oracion_con_subordinada(eng, [o(Suj, GVSub), o(Suj, GVMain)]) -->
     g_verbal(eng, GVMain).
 
 
-oracion_con_subordinada_implicita(eng, [o(SujMain, GVMain), o(SujRel, GVSub)]) -->
-    (g_nombre_propio(eng, SujMain); g_nominal(eng, SujMain)),
-    (g_relativos(eng, rel(_)); []),  % Permite que se omita el relativo
-    oracion_simple(eng, o(SujRel, GVSub)),
+oracion_con_subordinada_implicita(eng, [o(A, GVMain), o(S, GVSubAdjusted)]) -->
+    g_nominal(eng, A), 
+    (g_relativos(eng, rel(_)) ; []),
+    oracion_simple(eng, o(S, gv(V, gadv(Adv)))),
+    { GVSubAdjusted = gv(V, gadv(Adv), A) },
     g_verbal(eng, GVMain).
 
 % Descompone un sujeto compuesto en una lista de sujetos individuales
@@ -425,7 +426,7 @@ n(chinese).
 n(week).
 n(girl).
 n(exgirlfriend).
-n(exteammate).
+n(ex-teammate).
 
 
 nombre_compuesto(climbing, wall).
@@ -521,6 +522,7 @@ verbo(eng, v(enjoys, G)) --> [enjoys, G], {gerundio(G) }.
 verbo(eng, v(goes, G)) --> [goes, G], {gerundio(G) }.
 verbo(eng, v(is, P)) --> [is, P], { pasado(P) }.
 verbo(eng, v(has, P)) --> [has, P], { pasado(P) }.
+verbo(eng, v(have, P)) --> [have, P], { pasado(P) }.
 verbo(eng, v(has, been ,P)) --> [has, been,P], { pasado(P) }.
 verbo(eng, v(was, P)) --> [was, P], { pasado(P) }.
 
@@ -550,6 +552,7 @@ v(dances).
 v(plays).
 v(practices).
 v(has).
+v(have).
 v(is).
 v(competes).
 v(runs).
