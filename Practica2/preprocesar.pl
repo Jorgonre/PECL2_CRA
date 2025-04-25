@@ -66,13 +66,16 @@ preprocesar_en(Sentence, Tokens) :-
     atom_or_string_to_string(Sentence, Str0),
     string_lower(Str0, Lower0),
     re_replace("^[0-9]+;", "", Lower0, WithoutId),
-    expand_contractions_en(WithoutId, Expanded),
+    % Aislar todas las comas (globalmente) como tokens separados
+    re_replace("\\s*,\\s*"/g, " , ", WithoutId, WithSpaces),
+    expand_contractions_en(WithSpaces, Expanded),
     remove_punctuation_en(Expanded, Clean),
     split_string(Clean, " ", "", Raw0),
-    exclude(==( ""), Raw0, Raw1),
+    exclude(==(""), Raw0, Raw1),
     maplist(normalize_en_token, Raw1, Tokens).
 
-% convierte tokens exactos de la forma "'C'" → "C"
+% convierte coma en átomo "coma" y tokens exactos de la forma "'C'" → "C"
+normalize_en_token(",", "coma") :- !.
 normalize_en_token(S, C) :-
     string_chars(S, ['\'', Ch, '\'']), !,
     string_chars(C, [Ch]).
@@ -86,9 +89,9 @@ remove_punctuation_en(In, Out) :-
 valid_char_en(C) :-
        char_type(C, alnum)  % letras y dígitos
     ;  C = ' '
-    ;  C = ','
     ;  C = '\''
-    ;  C = '-'.
+    ;  C = '-'
+    ;  C = ','.  % permitimos coma como carácter válido para convertir luego en token
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Contracciones inglés → inglés expansión
